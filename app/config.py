@@ -9,6 +9,6 @@ class Settings(BaseSettings):
     @staticmethod
     def get_admin_url(database_url: str) -> str:
         r = urlsplit(database_url)
-        r._replace(path='/postgres')
+        r = r._replace(path='/postgres')
 
         return urlunsplit(r)    
