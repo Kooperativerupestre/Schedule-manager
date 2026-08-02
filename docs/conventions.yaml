@@ -1,0 +1,9 @@
+namespace:
+  use: classes that group functions, which have no state and cannot be instantiated.
+  why it was created: it is a convention of this project to bring more clarity and not simply add states to function classes.
+  when not to use: any class that needs to store state.
+
+repository returning a bool in idempotent functions:
+  use: database functions that do not generate errors if something does not exist or was not affected (such as end, delete, etc...).
+  why: make it easier for the service and other things that use it to identify whether the action occurred or not.
+  when not to use: functions that can return errors (add) or get functions (return: value | None).
