@@ -10,8 +10,17 @@ import pytest
 import psycopg
 from psycopg import AsyncConnection
 from schedule_manager.business.service import BusinessService
+from schedule_manager.units.service import UnitService
+from schedule_manager.workstations.service import WorkstationService
+from schedule_manager.capabilities.repository import CapabilitiesRepository
+from schedule_manager.capabilities.capabilities import Resource, Action
+from schedule_manager.units.models import Unit
+from schedule_manager.capabilities.models import CapabilityInput
+from schedule_manager.units.repository import UnitRepository
 from uuid import UUID
 from schedule_manager.business.schemas import BusinessAddRequest
+from schedule_manager.units.schemas import UnitAddRequest
+from schedule_manager.workstations.schemas import WorkstationAddRequest
 from schedule_manager.people.repository import PeopleRepository
 from schedule_manager.business.repository import BusinessRepository
 from schedule_manager.business.models import Business
@@ -95,9 +104,79 @@ async def business(conn: AsyncConnection[DictRow]):
         conn
     )
 @pytest.fixture
+async def unit(business, conn:AsyncConnection[DictRow]):
+    return await UnitRepository.add(
+        Unit(
+            business,
+            '234',
+            '234',
+            GLOBAL_VALID_NUMBER
+        ),  conn
+    )
+@pytest.fixture
 async def create_business_with_owner(conn:AsyncConnection[DictRow]):
     async def _create(owner:UUID):
 
         business_id = await BusinessService.add(owner, BusinessAddRequest(name='213', description='3', phone_number=GLOBAL_VALID_NUMBER), conn)
         return business_id
     return _create
+
+@pytest.fixture
+async def create_business_context(conn: AsyncConnection[DictRow], person_factory):
+    async def _create():
+        owner = await person_factory('owner', '1111111111')
+        business_id = await BusinessService.add(
+            owner.id,
+            BusinessAddRequest(name='Business', description='test', phone_number=GLOBAL_VALID_NUMBER),
+            conn,
+        )
+        return owner, business_id
+
+    return _create
+
+
+@pytest.fixture
+async def create_unit_with_owner(conn: AsyncConnection[DictRow]):
+    async def _create(owner_id: UUID, business_id: UUID):
+        unit = await UnitService.add(
+            owner_id,
+            UnitAddRequest(
+                name='Unit',
+                business_id=business_id,
+                description='test',
+                phone_number=GLOBAL_VALID_NUMBER,
+            ),
+            conn,
+        )
+        return unit
+
+    return _create
+
+@pytest.fixture
+async def create_workstation_with_owner(conn: AsyncConnection[DictRow]):
+    async def _create(owner_id: UUID, unit_id: UUID):
+        workstation_id = await WorkstationService.add(
+            owner_id,
+            WorkstationAddRequest(
+                unit_id=unit_id,
+                name='Workstation',
+                description='test',
+            ),
+            conn,
+        )
+        return workstation_id
+
+    return _create
+
+
+@pytest.fixture
+async def grant_capability(conn: AsyncConnection[DictRow]):
+    async def _grant(person_id: UUID, target_id: UUID, resource: Resource, action: Action):
+        return await CapabilitiesRepository.add(
+            person_id,
+            target_id,
+            CapabilityInput(resource=resource, action=action, end_at=None),
+            conn,
+        )
+
+    return _grant
