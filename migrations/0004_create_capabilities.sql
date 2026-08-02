@@ -22,7 +22,10 @@ CREATE TABLE capabilities (
 
             'members_invite',
             'members_manage',
-            'members_read'
+            'members_read',
+
+            'unit_lifecycle_manage',
+            'workstation_lifecycle_manage'
         )
     )
 );
@@ -43,4 +46,6 @@ VALUES
     ('workstation_holidays_manage'),
     ('members_invite'),
     ('members_manage'),
-    ('members_read');
+    ('members_read'),
+    ('unit_lifecycle_manage'),
+    ('workstation_lifecycle_manage');

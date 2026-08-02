@@ -17,6 +17,9 @@ class Resource(AutoLowerEnum):
     UNIT_HOLIDAYS = auto()
     WORKSTATION_HOLIDAYS = auto()
 
+    UNIT_LIFECYCLE = auto()
+    WORKSTATION_LIFECYCLE = auto()
+    
     MEMBERS = auto()
 
 
@@ -41,6 +44,9 @@ SCOPE_BY_RESOURCE = {
     Resource.UNIT_HOLIDAYS: Scope.UNIT,
     Resource.WORKSTATION_HOLIDAYS: Scope.WORKSTATION,
 
+    Resource.UNIT_LIFECYCLE: Scope.BUSINESS,
+    Resource.WORKSTATION_LIFECYCLE: Scope.UNIT,
+    
     Resource.MEMBERS: Scope.BUSINESS,
 }
 
@@ -62,6 +68,8 @@ class Capability:
     def __post_init__(self):
         if self.action == Action.INVITE and self.resource != Resource.MEMBERS:
             raise InvalidCapabilitiesCombinationError("Only members support invite")
+        elif self.action in [Action.INVITE, Action.READ] and self.resource == Resource.UNIT_LIFECYCLE:
+            raise InvalidCapabilitiesCombinationError("Unit lifecycle only have")
 
     @property
     def name(self) -> str:

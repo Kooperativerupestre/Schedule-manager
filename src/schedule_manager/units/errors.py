@@ -1,0 +1,2 @@
+class UnitNotFoundError(Exception):
+    pass

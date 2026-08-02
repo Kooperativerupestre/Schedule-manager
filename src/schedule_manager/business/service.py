@@ -43,6 +43,7 @@ class BusinessService:
         await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.MANAGE, None), conn)
         await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.READ, None), conn)
         await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.INVITE, None), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.UNIT_LIFECYCLE, Action.MANAGE, None), conn)
         await MembershipRepository.add(person_id, business_id, conn)
         return business_id
         
