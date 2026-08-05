@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from schedule_manager.capabilities.errors import *
 from schedule_manager.people.errors import *
 from schedule_manager.business.errors import *
-from schedule_manager.business_holidays.errors import *
+from schedule_manager.business.holidays.errors import *
 from schedule_manager.core.errors import *
 from schedule_manager.auth.errors import *
 from schedule_manager.business_memberships.errors import *

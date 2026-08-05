@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from schedule_manager.business_holidays.service import BusinessHolidayService
+from schedule_manager.business.holidays.service import BusinessHolidayService
 from schedule_manager.holidays.schemas import HolidayAddRequest, HolidayUpdateRequest
 from schedule_manager.db.connection import get_connection, get_transaction
 from psycopg import AsyncConnection
