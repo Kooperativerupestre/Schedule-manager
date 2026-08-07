@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import DictRow
 from psycopg import sql
-from schedule_manager.config import settings
+from schedule_manager.db.connection import get_transaction
 import asyncio
 
 async def create_database(conn: psycopg.AsyncConnection[DictRow], dbname: str) -> None:
@@ -14,13 +14,11 @@ async def database_exists(conn: psycopg.AsyncConnection[DictRow], dbname: str) -
     row = await result.fetchone()
     return row is not None
 
-async def setup_database(admin_url:str, dbname:str) -> None:
-    async with await psycopg.AsyncConnection.connect(admin_url) as conn:
+async def setup_database(dbname:str) -> None:
+    async for conn in get_transaction():
         exists = await database_exists(conn, dbname)
         if not exists:
             await create_database(conn, dbname)
-            await conn.commit()
 
 if __name__ == "__main__":
-    admin_url = settings.get_admin_url(settings.database_url)
-    asyncio.run(setup_database(admin_url, "schedule_db"))
+    asyncio.run(setup_database("schedule_db"))

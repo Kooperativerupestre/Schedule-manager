@@ -6,12 +6,13 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
     database_url: str
-    test_database_url:str
-    jwt_secret_key:str
+    test_database_url: str
+    jwt_secret_key: str
     jwt_algorithm: str = "HS256"
 
     model_config = SettingsConfigDict(
         env_file=ROOT / ".env",
+        extra="ignore",
     )
 
     @staticmethod
