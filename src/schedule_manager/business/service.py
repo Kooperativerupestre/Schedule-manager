@@ -6,7 +6,7 @@ from psycopg import AsyncConnection
 from uuid import UUID
 from schedule_manager.business.errors import BusinessNotFoundError
 from schedule_manager.common.missing import MISSING
-from schedule_manager.business_memberships.repository import MembershipRepository
+from schedule_manager.business.memberships.repository import MembershipRepository
 from schedule_manager.business.validator import BusinessValidator
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.capabilities import Resource, Action

@@ -11,7 +11,7 @@ from psycopg import AsyncConnection
 from schedule_manager.capabilities.schemas import CapabilityAddRequest, CapabilityEndRequest, CapabilityGetRequest
 from psycopg.rows import DictRow
 from schedule_manager.capabilities.validator import CapabilitiesValidator
-from schedule_manager.business_memberships.validator import MembershipValidator
+from schedule_manager.business.memberships.validator import MembershipValidator
 from schedule_manager.capabilities.errors import CapabilityNotFoundError
 
 @namespace

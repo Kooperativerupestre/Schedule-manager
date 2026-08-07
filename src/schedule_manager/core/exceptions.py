@@ -6,7 +6,7 @@ from schedule_manager.people.errors import *
 from schedule_manager.business.errors import *
 from schedule_manager.core.errors import *
 from schedule_manager.auth.errors import *
-from schedule_manager.business_memberships.errors import *
+from schedule_manager.business.memberships.errors import *
 from schedule_manager.units.errors import *
 from schedule_manager.workstations.workstation.errors import *
 from schedule_manager.workstations.schedules.errors import *

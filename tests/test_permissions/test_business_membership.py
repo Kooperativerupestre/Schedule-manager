@@ -1,6 +1,6 @@
 import pytest
 
-from schedule_manager.business_memberships.service import MembershipInviteService, MembershipService
+from schedule_manager.business.memberships.service import MembershipInviteService, MembershipService
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 

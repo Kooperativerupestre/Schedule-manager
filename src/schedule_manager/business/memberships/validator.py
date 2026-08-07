@@ -2,9 +2,9 @@ from schedule_manager.utils.namespace import namespace
 from uuid import UUID
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
-from schedule_manager.business_memberships.repository import MembershipRepository
-from schedule_manager.business_memberships.status import MembershipStatus
-from schedule_manager.business_memberships.errors import NotBusinessMembershipError
+from schedule_manager.business.memberships.repository import MembershipRepository
+from schedule_manager.business.memberships.status import MembershipStatus
+from schedule_manager.business.memberships.errors import NotBusinessMembershipError
 from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.capabilities.capabilities import Action, Capability, Resource
 from schedule_manager.capabilities.repository import CapabilitiesRepository

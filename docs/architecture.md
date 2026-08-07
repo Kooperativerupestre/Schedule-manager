@@ -91,3 +91,4 @@ This is planned but not yet implemented, and the mechanism is undecided:
   database enforce invariants — but moves business logic out of Python.
 
 # Architecture 1.1
+

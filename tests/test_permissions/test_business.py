@@ -4,7 +4,7 @@ from psycopg.rows import DictRow
 
 from schedule_manager.business.schemas import BusinessAddRequest, BusinessUpdateRequest
 from schedule_manager.business.service import BusinessService
-from schedule_manager.business_memberships.service import MembershipService
+from schedule_manager.business.memberships.service import MembershipService
 from schedule_manager.capabilities.capabilities import Action, Resource
 from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.capabilities.service import CapabilitiesService

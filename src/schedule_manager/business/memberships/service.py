@@ -1,14 +1,14 @@
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.business_memberships.schemas import EmailRequest
-from schedule_manager.business_memberships.repository import MembershipRepository, MembershipInvitesRepository
+from schedule_manager.business.memberships.schemas import EmailRequest
+from schedule_manager.business.memberships.repository import MembershipRepository, MembershipInvitesRepository
 from uuid import UUID
-from schedule_manager.business_memberships.status import MembershipStatus
+from schedule_manager.business.memberships.status import MembershipStatus
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
-from schedule_manager.business_memberships.errors import NotBusinessMembershipError, MembershipInviteNotFoundError
-from schedule_manager.business_memberships.validator import MembershipValidator
+from schedule_manager.business.memberships.errors import NotBusinessMembershipError, MembershipInviteNotFoundError
+from schedule_manager.business.memberships.validator import MembershipValidator
 from schedule_manager.capabilities.capabilities import Action, Scope
-from schedule_manager.business_memberships.models import BusinessMembership, BusinessMembershipInvite
+from schedule_manager.business.memberships.models import BusinessMembership, BusinessMembershipInvite
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 
 @namespace

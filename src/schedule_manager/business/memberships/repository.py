@@ -5,12 +5,12 @@ from psycopg import errors as psycopg_errors
 from schedule_manager.business import errors as schedule_errors_business
 from psycopg.rows import class_row, DictRow
 from schedule_manager.people.errors import PersonNotFoundError
-from schedule_manager.business_memberships.errors import (
+from schedule_manager.business.memberships.errors import (
     InviteAlreadyExistsError,
     CannotCreateBusinessMembershipInviteError,
     CannotAddMembershipError
 )
-from schedule_manager.business_memberships.models import (
+from schedule_manager.business.memberships.models import (
     BusinessMembership,
     BusinessMembershipRow, 
     ModelTranslator,
@@ -18,7 +18,7 @@ from schedule_manager.business_memberships.models import (
     BusinessMembershipInviteRow,
 )
 
-from schedule_manager.business_memberships.status import (
+from schedule_manager.business.memberships.status import (
     MembershipStatus
 )
 
