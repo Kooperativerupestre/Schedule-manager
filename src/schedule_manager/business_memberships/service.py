@@ -7,8 +7,9 @@ from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 from schedule_manager.business_memberships.errors import NotBusinessMembershipError, MembershipInviteNotFoundError
 from schedule_manager.business_memberships.validator import MembershipValidator
-from schedule_manager.capabilities.capabilities import Action
+from schedule_manager.capabilities.capabilities import Action, Scope
 from schedule_manager.business_memberships.models import BusinessMembership, BusinessMembershipInvite
+from schedule_manager.capabilities.repository import CapabilitiesRepository
 
 @namespace
 class MembershipService:
@@ -51,6 +52,7 @@ class MembershipInviteService:
     @staticmethod
     async def end(person_id:UUID, invite_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.MANAGE, conn)
+        await CapabilitiesRepository.end_all_from_target(person_id, invite_id, Scope.BUSINESS, conn)
         r = await MembershipInvitesRepository.end(invite_id, conn)
         if not r:
             raise MembershipInviteNotFoundError

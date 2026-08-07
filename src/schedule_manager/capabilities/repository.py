@@ -1,4 +1,4 @@
-from schedule_manager.capabilities.capabilities import Capability
+from schedule_manager.capabilities.capabilities import Capability, Scope, COLUMN_BY_SCOPE
 from uuid import UUID
 from psycopg import AsyncConnection
 from datetime import datetime, timezone
@@ -312,3 +312,19 @@ WHERE id = %s;
 
         async with conn.cursor() as cur:
             await cur.execute(query, (person_id,))
+    @staticmethod
+    async def end_all_from_target(person_id:UUID, target_id:UUID, scope:Scope, conn:AsyncConnection[DictRow]) -> bool:
+        query = sql.SQL("""
+            DELETE FROM person_capabilities
+            WHERE person_id = %s
+              AND {} = %s
+        """).format(COLUMN_BY_SCOPE[scope])
+
+        values = (
+            person_id,
+            target_id
+        )
+
+        async with conn.cursor() as cur:
+            await cur.execute(query, values)
+            return cur.rowcount > 0
