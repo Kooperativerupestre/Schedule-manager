@@ -1,2 +1,0 @@
-class CannotCreateBusinessHolidayError(Exception):
-    pass

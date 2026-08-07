@@ -8,25 +8,25 @@ from schedule_manager.common.missing import _Missing, MISSING
 from schedule_manager.common.update_result import UpdateOutputs
 from schedule_manager.core.errors import NullDataError, OverlappingSchedulesError
 from psycopg import sql
-from schedule_manager.core.ranges import db_range_to_strict_range
+from schedule_manager.core.ranges.convertions import RangeConverts
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.holidays.models import Holiday, HolidayChanges, HolidayRow
+from schedule_manager.holidays.models import Holiday, HolidayChanges, HolidayRange, HolidayRow, db_range_to_holiday_range, holiday_range_to_db
 from schedule_manager.core.errors import UnexpectedStateError
+from schedule_manager.core.ranges.models import StrictRange
 
 
-class HolidayRepositoryContext(ABC):
+@dataclass(frozen=True)
+class HolidayRepositoryContext:
     table_name: sql.Identifier
     owner_column: sql.Identifier
 
     foreign_key_error: type[Exception]
 
-
-
 @namespace
 class HolidayRepository:
     @staticmethod
     async def add(
-        config: type[HolidayRepositoryContext],
+        config: HolidayRepositoryContext,
         owner_id: UUID,
         holiday: Holiday,
         conn: AsyncConnection[DictRow],
@@ -45,7 +45,8 @@ RETURNING id;
             owner_id,
             holiday.name,
             holiday.description,
-            holiday.range.to_db_range,
+            holiday_range_to_db(holiday.range),
+
         )
 
         try:
@@ -68,7 +69,7 @@ RETURNING id;
             raise NullDataError
     @staticmethod
     async def delete(
-        config: type[HolidayRepositoryContext],
+        config: HolidayRepositoryContext,
         holiday_id: UUID,
         conn: AsyncConnection[DictRow],
     ) -> bool:
@@ -83,7 +84,7 @@ RETURNING id;
             return cur.rowcount != 0
     @staticmethod
     async def update(
-        config: type[HolidayRepositoryContext],
+        config: HolidayRepositoryContext,
         holiday_id: UUID,
         changes: HolidayChanges,
         conn: AsyncConnection[DictRow],
@@ -132,7 +133,7 @@ WHERE id = %s;
             raise OverlappingSchedulesError
     @staticmethod
     async def get(
-        config: type[HolidayRepositoryContext],
+        config: HolidayRepositoryContext,
         holiday_id: UUID,
         conn: AsyncConnection[DictRow],
     ) -> Holiday | None:
@@ -160,5 +161,37 @@ WHERE id = %s;
         return Holiday(
             name=row.name,
             description=row.description,
-            range=db_range_to_strict_range(row.holiday_range),
+            range=db_range_to_holiday_range(row.holiday_range),
         )
+    @staticmethod
+    async def has_overlapping_interval(
+        config: HolidayRepositoryContext,
+        owner_id: UUID,
+        interval: HolidayRange,
+        conn: AsyncConnection[DictRow],
+    ) -> bool:
+        query = sql.SQL("""
+    SELECT EXISTS (
+        SELECT 1
+        FROM {table}
+        WHERE {owner_column} = %s
+        AND holiday_range && %s::TSTZRANGE
+    );
+    """).format(
+            table=config.table_name,
+            owner_column=config.owner_column,
+        )
+
+        values = (
+            owner_id,
+            holiday_range_to_db(interval),
+        )
+
+        async with conn.cursor() as cur:
+            await cur.execute(query, values)
+            row = await cur.fetchone()
+
+        if row is None:
+            raise UnexpectedStateError
+
+        return row["exists"]

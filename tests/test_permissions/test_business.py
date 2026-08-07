@@ -10,7 +10,7 @@ from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.capabilities.service import CapabilitiesService
 from schedule_manager.capabilities.schemas import CapabilityGetRequest, CapabilityAddRequest
 from tests.helpers import GLOBAL_VALID_NUMBER
-
+from schedule_manager.core.ranges.constants import NEVER_END
 
 
 async def test_delete_business_without_permission_raises_forbidden(
@@ -72,7 +72,7 @@ async def test_add_member_permission_requires_members_manage(
                 resource=Resource.MEMBERS,
                 action=Action.INVITE,
                 target_id=business_id,
-                end_at=None,
+                end_at=NEVER_END,
             ),
             conn,
         )

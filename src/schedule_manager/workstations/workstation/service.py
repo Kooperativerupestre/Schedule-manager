@@ -6,15 +6,15 @@ from psycopg.rows import DictRow
 from schedule_manager.units.validator import UnitValidator
 from schedule_manager.common.missing import MISSING
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.workstations.errors import WorkstationNotFoundError
-from schedule_manager.workstations.models import Workstation, WorkstationChanges, WorkstationGetOutput
-from schedule_manager.workstations.repository import WorkstationRepository
-from schedule_manager.workstations.schemas import WorkstationAddRequest, WorkstationUpdateRequest
-from schedule_manager.workstations.validator import WorkstationValidator
+from schedule_manager.workstations.workstation.errors import WorkstationNotFoundError
+from schedule_manager.workstations.workstation.models import Workstation, WorkstationChanges, WorkstationGetOutput
+from schedule_manager.workstations.workstation.repository import WorkstationRepository
+from schedule_manager.workstations.workstation.schemas import WorkstationAddRequest, WorkstationUpdateRequest
+from schedule_manager.workstations.workstation.validator import WorkstationValidator
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.models import CapabilityInput
 from schedule_manager.capabilities.capabilities import Resource, Action
-
+from schedule_manager.core.ranges.constants import NEVER_END
 
 @namespace
 class RequestTranslator:
@@ -30,7 +30,7 @@ class RequestTranslator:
     def update_request_to_changes(request: WorkstationUpdateRequest) -> WorkstationChanges:
         fields = request.model_fields_set
         return WorkstationChanges(
-            name=request.name if "name" in fields else MISSING,
+            name=request.name if "name" in fields else MISSING,  
             description=request.description if "description" in fields else MISSING,
         )
 
@@ -42,8 +42,8 @@ class WorkstationService:
         await UnitValidator.validate_workstation_lifecycle_capability(person_id, request.unit_id, conn)
         response = await WorkstationRepository.add(RequestTranslator.add_request_to_workstation(request), conn)
 
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION, Action.MANAGE, None), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION, Action.READ, None), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION, Action.READ, NEVER_END), conn)
         return response.id
 
     @staticmethod

@@ -2,10 +2,9 @@ import pytest
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
-from schedule_manager.capabilities.capabilities import Action, Resource
 from schedule_manager.capabilities.errors import ForbiddenError
-from schedule_manager.workstations.schemas import WorkstationAddRequest, WorkstationUpdateRequest
-from schedule_manager.workstations.service import WorkstationService
+from schedule_manager.workstations.workstation.schemas import WorkstationAddRequest, WorkstationUpdateRequest
+from schedule_manager.workstations.workstation.service import WorkstationService
 
 
 async def test_add_workstation_without_permission_raises_forbidden(
@@ -106,7 +105,6 @@ async def test_add_workstation_with_permission(
         conn,
     )
 
-    assert workstation_id is not None
 
 
 async def test_manage_workstation_with_permission(

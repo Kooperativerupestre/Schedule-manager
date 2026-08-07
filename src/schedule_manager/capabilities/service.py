@@ -54,7 +54,7 @@ class CapabilitiesService:
     async def end_all(person_id:UUID, target_person_id:UUID, request:CapabilityEndRequest, conn:AsyncConnection[DictRow]) -> None:
         await CapabilitiesValidator.validate_manage_capability(person_id, request.resource, request.target_id, conn)
 
-        r = await CapabilitiesRepository.end_all(target_person_id, request.target_id, RequestTranslator.capability_end_request_to_capability(request), conn)
+        r = await CapabilitiesRepository.end_all_from_target(target_person_id, request.target_id, RequestTranslator.capability_end_request_to_capability(request), conn)
         if not r:
             raise CapabilityNotFoundError
     @staticmethod

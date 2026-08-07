@@ -12,6 +12,7 @@ from schedule_manager.units.errors import UnitNotFoundError
 from schedule_manager.capabilities.capabilities import Capability, Resource, Action
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.models import CapabilityInput
+from schedule_manager.core.ranges.constants import NEVER_END
 
 @namespace
 class RequestTranslator:
@@ -42,9 +43,11 @@ class UnitService:
             RequestTranslator.add_request_to_unit(unit),
             conn
         )
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.MANAGE, None), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.READ, None), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION_LIFECYCLE, Action.MANAGE, None), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.READ, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION_LIFECYCLE, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.READ, NEVER_END), conn)
         return response.id
     @staticmethod
     async def delete(person_id:UUID, business_id:UUID, unit_id:UUID, conn:AsyncConnection[DictRow]) -> None:

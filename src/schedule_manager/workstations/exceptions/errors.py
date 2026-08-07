@@ -1,0 +1,2 @@
+class WorkstationExceptionNotFoundError(Exception):
+    pass

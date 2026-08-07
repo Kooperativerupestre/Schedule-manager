@@ -12,6 +12,7 @@ from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.capabilities.models import CapabilityInput
 from psycopg.rows import DictRow
+from schedule_manager.core.ranges.constants import NEVER_END
 
 @namespace
 class RequestTranslator:
@@ -38,12 +39,12 @@ class BusinessService:
     @staticmethod
     async def add(person_id:UUID, request:BusinessAddRequest, conn:AsyncConnection[DictRow]) -> UUID:
         business_id = await BusinessRepository.add(RequestTranslator.add_request_to_business(request), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.MANAGE, None), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.READ, None), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.MANAGE, None), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.READ, None), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.INVITE, None), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.UNIT_LIFECYCLE, Action.MANAGE, None), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.READ, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.MANAGE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.READ, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.INVITE, NEVER_END), conn)
+        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.UNIT_LIFECYCLE, Action.MANAGE, NEVER_END), conn)
         await MembershipRepository.add(person_id, business_id, conn)
         return business_id
         

@@ -6,8 +6,8 @@ from psycopg.rows import DictRow
 
 from schedule_manager.auth.dependencies import get_current_person_id
 from schedule_manager.db.connection import get_connection, get_transaction
-from schedule_manager.workstations.schemas import WorkstationAddRequest, WorkstationUpdateRequest
-from schedule_manager.workstations.service import WorkstationService
+from schedule_manager.workstations.workstation.schemas import WorkstationAddRequest, WorkstationUpdateRequest
+from schedule_manager.workstations.workstation.service import WorkstationService
 
 
 router = APIRouter(prefix="/workstations", tags=["workstations"])

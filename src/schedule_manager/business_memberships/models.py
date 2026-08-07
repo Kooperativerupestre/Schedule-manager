@@ -1,7 +1,8 @@
 from schedule_manager.utils.namespace import namespace
 from dataclasses import dataclass
 from datetime import datetime
-from schedule_manager.core.ranges import NormalRange, db_range_to_normal_range
+from schedule_manager.core.ranges.models import NormalRange
+from schedule_manager.core.ranges.convertions import RangeConverts
 from uuid import UUID
 from psycopg.types.range import Range
 
@@ -24,7 +25,7 @@ class BusinessMembership:
 
 def row_to_model(row:BusinessMembershipRow) -> BusinessMembership:
     return BusinessMembership(
-        validity_range=db_range_to_normal_range(row.validity_range),
+        validity_range=RangeConverts.db_range_to_normal_range(row.validity_range),
         person_id=row.person_id,
         business_id=row.business_id
     )
@@ -53,7 +54,7 @@ class ModelTranslator:
     @staticmethod
     def membership_row_to_mode(row:BusinessMembershipRow) -> BusinessMembership:
         return BusinessMembership(
-        validity_range=db_range_to_normal_range(row.validity_range),
+        validity_range=RangeConverts.db_range_to_normal_range(row.validity_range),
         person_id=row.person_id,
         business_id=row.business_id
     )

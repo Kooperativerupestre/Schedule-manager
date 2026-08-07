@@ -89,3 +89,5 @@ This is planned but not yet implemented, and the mechanism is undecided:
   capabilities at the DB level. Stronger guarantee, consistent with how
   `check_single_target` and the `TSTZRANGE` exclusion constraints already let the
   database enforce invariants — but moves business logic out of Python.
+
+# Architecture 1.1

@@ -5,9 +5,9 @@ from psycopg.rows import DictRow, class_row
 
 from schedule_manager.common.missing import MISSING
 from schedule_manager.core.errors import UnexpectedStateError
-from schedule_manager.workstations.errors import WorkstationNotFoundError
+from schedule_manager.workstations.workstation.errors import WorkstationNotFoundError
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.workstations.models import (
+from schedule_manager.workstations.workstation.models import (
     Workstation,
     WorkstationAddOutput,
     WorkstationChanges,

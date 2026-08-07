@@ -4,10 +4,13 @@ from fastapi.responses import JSONResponse
 from schedule_manager.capabilities.errors import *
 from schedule_manager.people.errors import *
 from schedule_manager.business.errors import *
-from schedule_manager.business.holidays.errors import *
 from schedule_manager.core.errors import *
 from schedule_manager.auth.errors import *
 from schedule_manager.business_memberships.errors import *
+from schedule_manager.units.errors import *
+from schedule_manager.workstations.workstation.errors import *
+from schedule_manager.workstations.schedules.errors import *
+from schedule_manager.workstations.exceptions.errors import *
 GLOBAL_ERROR_MAPPING = {
     ForbiddenError: (403, "Forbidden"),
     DuplicateCapabilityError: (409, "Capability already exists"),
@@ -23,7 +26,6 @@ GLOBAL_ERROR_MAPPING = {
     UniqueProviderIdentifierViolatedError: (409, "Identifier already in use"),
     PersonUpdateForbiddenError: (403, "Cannot update person"),
     BusinessNotFoundError: (404, "Business not found"),
-    CannotCreateBusinessHolidayError: (400, "Cannot create business holiday"),
     InviteAlreadyExistsError: (409, "Invite already exists"),
     CannotCreateBusinessMembershipInviteError: (400, "Cannot create membership invite"),
     CannotAddMembershipError: (400, "Cannot add membership"),
@@ -37,6 +39,10 @@ GLOBAL_ERROR_MAPPING = {
     NotFoundError: (404, "Resource not found"),
     PhoneNumberAlreadyExistsError: (409, "Phone number already exists"),
     UnexpectedStateError: (500, "Unexpected state"),
+    UnitNotFoundError: (404, "Unit not found"),
+    WorkstationNotFoundError: (404, "Workstation not found"),
+    WorkstationExceptionNotFoundError: (404, "Workstation exception not found"),
+    ScheduleNotFoundError: (404, "Schedule not found"),
 }
 async def global_exception_handler(request: Request, exc: Exception):
     exc_type = type(exc)

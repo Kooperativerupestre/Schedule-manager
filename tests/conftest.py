@@ -11,7 +11,7 @@ import psycopg
 from psycopg import AsyncConnection
 from schedule_manager.business.service import BusinessService
 from schedule_manager.units.service import UnitService
-from schedule_manager.workstations.service import WorkstationService
+from schedule_manager.workstations.workstation.service import WorkstationService
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.units.models import Unit
@@ -20,11 +20,12 @@ from schedule_manager.units.repository import UnitRepository
 from uuid import UUID
 from schedule_manager.business.schemas import BusinessAddRequest
 from schedule_manager.units.schemas import UnitAddRequest
-from schedule_manager.workstations.schemas import WorkstationAddRequest
+from schedule_manager.workstations.workstation.schemas import WorkstationAddRequest
 from schedule_manager.people.repository import PeopleRepository
 from schedule_manager.business.repository import BusinessRepository
 from schedule_manager.business.models import Business
 from schedule_manager.people.models import AddPersonInput
+from schedule_manager.core.ranges.constants import NEVER_END
 
 test_pool = AsyncConnectionPool(
     conninfo=settings.test_database_url,
@@ -175,7 +176,7 @@ async def grant_capability(conn: AsyncConnection[DictRow]):
         return await CapabilitiesRepository.add(
             person_id,
             target_id,
-            CapabilityInput(resource=resource, action=action, end_at=None),
+            CapabilityInput(resource=resource, action=action, end_at=NEVER_END),
             conn,
         )
 

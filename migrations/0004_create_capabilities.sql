@@ -25,7 +25,10 @@ CREATE TABLE capabilities (
             'members_read',
 
             'unit_lifecycle_manage',
-            'workstation_lifecycle_manage'
+            'workstation_lifecycle_manage',
+
+            'workstation_work_manage',
+            'workstation_work_read'
         )
     )
 );
@@ -48,4 +51,7 @@ VALUES
     ('members_manage'),
     ('members_read'),
     ('unit_lifecycle_manage'),
-    ('workstation_lifecycle_manage');
+    ('workstation_lifecycle_manage'),
+    ('workstation_work_manage'),
+    ('workstation_work_read');
+    

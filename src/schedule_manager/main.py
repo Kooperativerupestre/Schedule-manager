@@ -8,7 +8,7 @@ from schedule_manager.business.holidays.router import router as business_holiday
 from schedule_manager.business.router import router as business_router
 from schedule_manager.capabilities.router import router as capabilities_router
 from schedule_manager.units.router import router as units_router
-from schedule_manager.workstations.router import router as workstations_router
+from schedule_manager.workstations.workstation.router import router as workstations_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

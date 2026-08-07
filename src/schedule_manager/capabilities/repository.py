@@ -8,7 +8,7 @@ from psycopg.rows import class_row, DictRow
 import schedule_manager.capabilities.errors as schedule_errors
 from enum import Enum, auto
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.core.ranges import create_db_range
+from schedule_manager.core.ranges.models import create_db_range
 from schedule_manager.capabilities.models import (
     CapabilityAssignment,
     CapabilityInput,
@@ -17,7 +17,7 @@ from schedule_manager.capabilities.models import (
 )
 from schedule_manager.people.errors import PersonNotFoundError
 from schedule_manager.core.errors import UnexpectedStateError
-
+from schedule_manager.core.ranges.constants import DB_BEGIN, NEVER_END, _DB_Begin, _NeverEnd
 
 
 class Constraints(Enum):
@@ -82,7 +82,7 @@ class CapabilitiesRepository:
         conn: AsyncConnection[DictRow]
     ) -> UUID:
 
-        begin_at = None
+        begin_at = DB_BEGIN
 
         validity_range = create_db_range(
             begin_at,

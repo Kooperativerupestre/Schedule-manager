@@ -3,12 +3,13 @@ from schedule_manager.capabilities.capabilities import Resource, Action
 from uuid import UUID
 from datetime import datetime
 from schedule_manager.capabilities.errors import InvalidCapabilitiesCombinationError
+from schedule_manager.core.ranges.constants import _NeverEnd, NEVER_END
 
 class CapabilityAddRequest(BaseModel):
     resource: Resource
     action: Action
     target_id: UUID
-    end_at: datetime | None
+    end_at: datetime | _NeverEnd = NEVER_END
 
     @model_validator(mode="after")
     def validate_action_for_resource(self):
