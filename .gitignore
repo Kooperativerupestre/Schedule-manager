@@ -17,9 +17,6 @@ dist/
 *.egg-info/
 .eggs/
 
-# uv
-uv.lock
-
 # Tests
 .pytest_cache/
 .coverage
