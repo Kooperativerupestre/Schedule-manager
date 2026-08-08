@@ -1,1 +1,0 @@
-CREATE DATABASE schedule_manager_test;

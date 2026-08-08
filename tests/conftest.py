@@ -26,22 +26,7 @@ from schedule_manager.business.repository import BusinessRepository
 from schedule_manager.business.models import Business
 from schedule_manager.people.models import AddPersonInput
 from schedule_manager.core.ranges.constants import NEVER_END
-
-test_pool = AsyncConnectionPool(
-    conninfo=settings.test_database_url,
-    min_size=1,
-    max_size=5,
-    timeout=5,
-    kwargs={"row_factory": dict_row},
-    open=False
-)
-
-async def get_test_connection():
-    async with test_pool.connection() as conn:
-        async with conn.transaction() as tx:
-            yield conn
-            raise psycopg.Rollback(tx)
-
+from schedule_manager.db.connection import test_pool, get_test_connection
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def _manage_test_pool():
