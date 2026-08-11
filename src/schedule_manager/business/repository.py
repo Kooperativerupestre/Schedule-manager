@@ -1,8 +1,6 @@
 from schedule_manager.utils.namespace import namespace
 from uuid import UUID
 from psycopg import AsyncConnection
-from psycopg import errors as psycopg_errors
-from schedule_manager.business import errors as schedule_errors_business
 from schedule_manager.common.update_result import UpdateOutputs
 from schedule_manager.common.missing import MISSING
 from psycopg.rows import class_row, DictRow

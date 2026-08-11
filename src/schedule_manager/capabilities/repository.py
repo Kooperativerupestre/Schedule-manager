@@ -1,7 +1,6 @@
 from schedule_manager.capabilities.capabilities import Capability, Scope, COLUMN_BY_SCOPE
 from uuid import UUID
 from psycopg import AsyncConnection
-from datetime import datetime, timezone
 from psycopg import errors as psycopg_errors
 from psycopg import sql
 from psycopg.rows import class_row, DictRow
@@ -17,7 +16,7 @@ from schedule_manager.capabilities.models import (
 )
 from schedule_manager.people.errors import PersonNotFoundError
 from schedule_manager.core.errors import UnexpectedStateError
-from schedule_manager.core.ranges.constants import DB_BEGIN, NEVER_END, _DB_Begin, _NeverEnd
+from schedule_manager.core.ranges.constants import DB_BEGIN
 
 
 class Constraints(Enum):

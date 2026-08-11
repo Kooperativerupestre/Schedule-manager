@@ -9,7 +9,7 @@ from schedule_manager.business.validator import BusinessValidator
 from schedule_manager.units.validator import UnitValidator
 from schedule_manager.common.missing import MISSING
 from schedule_manager.units.errors import UnitNotFoundError
-from schedule_manager.capabilities.capabilities import Capability, Resource, Action
+from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.models import CapabilityInput
 from schedule_manager.core.ranges.constants import NEVER_END

@@ -1,16 +1,56 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from schedule_manager.capabilities.errors import *
-from schedule_manager.people.errors import *
-from schedule_manager.business.errors import *
-from schedule_manager.core.errors import *
-from schedule_manager.auth.errors import *
-from schedule_manager.business.memberships.errors import *
-from schedule_manager.units.errors import *
-from schedule_manager.workstations.workstation.errors import *
-from schedule_manager.workstations.schedules.errors import *
-from schedule_manager.workstations.exceptions.errors import *
+from schedule_manager.capabilities.errors import (
+    ForbiddenError,
+    DuplicateCapabilityError,
+    NullCapabilityError,
+    TargetNotFoundError,
+    CapabilityNameError,
+    CapabilityNotFoundError,
+    InvalidCapabilitiesCombinationError,
+)
+from schedule_manager.people.errors import (
+    PersonNotFoundError,
+    PersonUpdateForbiddenError,
+)
+from schedule_manager.business.errors import (
+    BusinessNotFoundError,
+)
+from schedule_manager.core.errors import (
+    NullDataError,
+    OverlappingSchedulesError,
+    InvalidPhoneNumberError,
+    EmailAlreadyExistsError,
+    InvalidEmailError,
+    NotFoundError,
+    PhoneNumberAlreadyExistsError,
+    UnexpectedStateError,
+)
+from schedule_manager.auth.errors import (
+    InvalidCredentialsError,
+    UniquePersonProviderViolatedError,
+    UniqueProviderIdentifierViolatedError,
+)
+from schedule_manager.business.memberships.errors import (
+    CannotCreateBusinessMembershipInviteError,
+    CannotAddMembershipError,
+    NotBusinessMembershipError,
+    MembershipInviteNotFoundError,
+    InviteAlreadyExistsError,
+)
+from schedule_manager.units.errors import (
+    UnitNotFoundError,
+)
+from schedule_manager.workstations.workstation.errors import (
+    WorkstationNotFoundError,
+)
+from schedule_manager.workstations.schedules.errors import (
+    ScheduleNotFoundError,
+)
+from schedule_manager.workstations.exceptions.errors import (
+    WorkstationExceptionNotFoundError,
+)
 GLOBAL_ERROR_MAPPING = {
     ForbiddenError: (403, "Forbidden"),
     DuplicateCapabilityError: (409, "Capability already exists"),

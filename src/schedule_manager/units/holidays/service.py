@@ -9,7 +9,6 @@ from schedule_manager.holidays.repository import HolidayRepository, Holiday
 from schedule_manager.holidays.service import RequestTranslator
 from schedule_manager.holidays.schemas import HolidayAddRequest, HolidayUpdateRequest, HolidayRangeRequest
 from schedule_manager.units.errors import UnitNotFoundError
-from schedule_manager.holidays.models import HolidayRange
 
 @namespace
 class UnitHolidayService:

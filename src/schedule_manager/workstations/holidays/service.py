@@ -1,5 +1,5 @@
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.capabilities.capabilities import Scope, Resource, Capability, Action
+from schedule_manager.capabilities.capabilities import Resource
 from schedule_manager.capabilities.validator import CapabilitiesValidator
 from uuid import UUID
 from psycopg import AsyncConnection

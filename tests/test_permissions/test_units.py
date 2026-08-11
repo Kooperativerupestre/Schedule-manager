@@ -2,7 +2,6 @@ import pytest
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
-from schedule_manager.capabilities.capabilities import Action, Resource
 from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.units.schemas import UnitAddRequest, UnitUpdateRequest
 from schedule_manager.units.service import UnitService
@@ -133,7 +132,7 @@ async def test_read_unit_with_permission(
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
 
-    unit = await UnitService.get(owner.id, unit_id, conn)
+    await UnitService.get(owner.id, unit_id, conn)
 
 
 

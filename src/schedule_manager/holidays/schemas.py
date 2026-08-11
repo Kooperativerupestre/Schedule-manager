@@ -1,8 +1,5 @@
-from pydantic import BaseModel, field_validator
-from schedule_manager.utils.datetime_validator import validate_datetime
+from pydantic import BaseModel
 from schedule_manager.common.missing import _Missing, MISSING
-from datetime import datetime
-from schedule_manager.core.ranges.schemas import StrictRangeRequest
 
 class HolidayDatetimeRequest(BaseModel):
     month:int

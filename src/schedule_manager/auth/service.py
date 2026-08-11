@@ -1,6 +1,6 @@
 from argon2 import PasswordHasher
 from schedule_manager.auth.repository import AuthenticationRepository
-from schedule_manager.auth.models import Authentication, AuthenticationModelsConstructor, Providers
+from schedule_manager.auth.models import AuthenticationModelsConstructor, Providers
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
@@ -24,7 +24,7 @@ class AuthenticationService:
 
         try:
             ph.verify(stored_hash, password)
-        except VerifyMismatchError, VerificationError:
+        except (VerifyMismatchError, VerificationError):
             raise InvalidCredentialsError
         return r.authentication_id
     @staticmethod

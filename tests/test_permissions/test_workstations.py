@@ -95,7 +95,7 @@ async def test_add_workstation_with_permission(
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
 
-    workstation_id = await WorkstationService.add(
+    await WorkstationService.add(
         owner.id,
         WorkstationAddRequest(
             unit_id=unit_id,
@@ -140,7 +140,7 @@ async def test_read_workstation_with_permission(
     owner = await person_factory('owner', '1000000000')
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
-    workstation_id = await create_workstation_with_owner(owner.id, unit_id)
+    await create_workstation_with_owner(owner.id, unit_id)
 
 
 

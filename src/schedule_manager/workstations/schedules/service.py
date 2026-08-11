@@ -12,12 +12,11 @@ from schedule_manager.workstations.schedules.models import (
     ScheduleAddInput,
     ScheduleChanges,
     ScheduleGetOutput,
-    ScheduleRange,
 )
 from schedule_manager.workstations.schedules.ranges import (
     schedule_range_to_holiday_range,
 )
-from schedule_manager.common.missing import _Missing, MISSING
+from schedule_manager.common.missing import MISSING
 from schedule_manager.capabilities.capabilities import Resource
 from schedule_manager.capabilities.validator import CapabilitiesValidator
 from uuid import UUID
@@ -30,7 +29,6 @@ from schedule_manager.units.holidays.repository import HolidayConfigUnitHolidays
 from schedule_manager.business.holidays.repository import HolidayConfigBusinessHolidays
 from schedule_manager.holidays.repository import HolidayRepository
 
-from schedule_manager.holidays.service import RequestTranslator as HolidayRequestTranslator
 
 # exceptions
 

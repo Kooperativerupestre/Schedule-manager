@@ -9,7 +9,7 @@ from schedule_manager.core.errors import PhoneNumberAlreadyExistsError
 async def test_duplicate_phone_number_error(
         conn:AsyncConnection[DictRow]
 ) -> None:
-    id_1 = await PeopleService.create_local(
+    await PeopleService.create_local(
         conn,
         LocalPersonCreateRequest(
             name='123',

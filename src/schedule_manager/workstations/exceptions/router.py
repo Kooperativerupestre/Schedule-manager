@@ -1,12 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
 from schedule_manager.auth.dependencies import get_current_person_id
 from schedule_manager.db.connection import get_connection, get_transaction
-from schedule_manager.workstations.exceptions.errors import WorkstationExceptionNotFoundError
 from schedule_manager.workstations.exceptions.schemas import (
     WorkstationExceptionAddRequest,
     WorkstationExceptionUpdateRequest,

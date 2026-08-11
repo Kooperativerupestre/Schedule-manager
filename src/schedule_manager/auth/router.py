@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends, Response
 from schedule_manager.auth.schemas import LocalLoginRequest
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
-from schedule_manager.db.connection import get_connection, get_transaction
+from schedule_manager.db.connection import get_transaction
 from schedule_manager.auth.service import AuthenticationService, InvalidCredentialsError
 from schedule_manager.auth.cookies import set_cookie, clear_cookie
 from schedule_manager.auth.dependencies import get_current_person_id

@@ -4,7 +4,8 @@ from uuid import UUID
 from datetime import datetime
 from schedule_manager.core.ranges.models import NormalRange
 from psycopg.types.range import Range
-from schedule_manager.core.ranges.constants import _NeverEnd, NEVER_END
+from schedule_manager.core.ranges.constants import _NeverEnd
+from schedule_manager.core.ranges.convertions import RangeConverts
 
 @dataclass(frozen=True)
 class CapabilityInput(Capability):
@@ -33,5 +34,5 @@ def capability_row_to_assignment(
     return CapabilityAssignment(
         resource=capability.resource,
         action=capability.action,
-        validity_range=db_range_to_normal_range(capability_row.validity_range)
+        validity_range=RangeConverts.db_range_to_normal_range(capability_row.validity_range)
     )

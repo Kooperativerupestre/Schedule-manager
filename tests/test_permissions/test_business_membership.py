@@ -5,7 +5,6 @@ from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
 from schedule_manager.capabilities.errors import ForbiddenError
-from tests.conftest import single_person
 
 # membership
 

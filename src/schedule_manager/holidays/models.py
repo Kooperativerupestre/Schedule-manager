@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 from schedule_manager.common.missing import _Missing
-from schedule_manager.core.ranges.models import StrictRange, DB_Range
+from schedule_manager.core.ranges.models import DB_Range
 from schedule_manager.core.ranges.constants import STANDARD_YEAR
 from datetime import datetime
 

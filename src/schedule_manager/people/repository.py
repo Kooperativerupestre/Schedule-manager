@@ -1,5 +1,4 @@
 from __future__ import annotations
-from dataclasses import dataclass
 from psycopg import AsyncConnection, errors
 from psycopg.rows import class_row, DictRow
 from uuid import UUID

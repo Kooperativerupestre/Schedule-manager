@@ -6,7 +6,6 @@ from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 from schedule_manager.auth.dependencies import get_current_person_id
 from uuid import UUID
-from schedule_manager.units.errors import UnitNotFoundError
 from schedule_manager.holidays.schemas import HolidayRangeRequest
 
 router = APIRouter(prefix="/units/{unit_id}/holidays", tags=["units-holidays"])

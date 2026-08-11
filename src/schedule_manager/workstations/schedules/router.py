@@ -10,8 +10,6 @@ from schedule_manager.workstations.schedules.schemas import (
     ScheduleChangesRequest,
     ScheduleRangeRequest,
 )
-from schedule_manager.workstations.schedules.models import ScheduleGetOutput
-from schedule_manager.workstations.schedules.errors import ScheduleNotFoundError
 
 router = APIRouter(prefix="/workstations/{workstation_id}/schedules", tags=["workstations-schedules"])
 

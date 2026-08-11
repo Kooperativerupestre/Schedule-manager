@@ -1,4 +1,4 @@
-from fastapi import Response, Cookie
+from fastapi import Response
 from uuid import UUID
 from schedule_manager.auth.jwt import generate_token
 

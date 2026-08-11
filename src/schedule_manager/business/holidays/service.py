@@ -1,5 +1,5 @@
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.capabilities.capabilities import Scope, Resource, Capability, Action
+from schedule_manager.capabilities.capabilities import Resource
 from schedule_manager.capabilities.validator import CapabilitiesValidator
 from uuid import UUID
 from psycopg import AsyncConnection
@@ -9,7 +9,6 @@ from schedule_manager.holidays.repository import HolidayRepository, Holiday
 from schedule_manager.holidays.service import RequestTranslator
 from schedule_manager.holidays.schemas import HolidayAddRequest, HolidayUpdateRequest, HolidayRangeRequest
 from schedule_manager.core.errors import NotFoundError
-from schedule_manager.holidays.models import HolidayRange
 
 @namespace
 class BusinessHolidayService:

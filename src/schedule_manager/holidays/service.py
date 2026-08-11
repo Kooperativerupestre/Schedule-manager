@@ -1,10 +1,7 @@
-from datetime import datetime
 
-from schedule_manager.core.ranges.constants import STANDARD_YEAR
 from schedule_manager.utils.namespace import namespace
 from schedule_manager.holidays.schemas import HolidayAddRequest, HolidayUpdateRequest, HolidayRangeRequest, HolidayDatetimeRequest
 from schedule_manager.holidays.models import Holiday, HolidayChanges, HolidayDatetime, HolidayRange
-from schedule_manager.core.ranges.models import StrictRange
 from schedule_manager.common.missing import _Missing, MISSING
 
 @namespace
