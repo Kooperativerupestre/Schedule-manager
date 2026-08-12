@@ -1,4 +1,4 @@
-from schedule_manager.capabilities.capabilities import Capability, Scope, COLUMN_BY_SCOPE
+from schedule_manager.capabilities.capabilities import Capability, Scope, COLUMN_BY_SCOPE, Resource, Action
 from uuid import UUID
 from psycopg import AsyncConnection
 from psycopg import errors as psycopg_errors
@@ -16,7 +16,7 @@ from schedule_manager.capabilities.models import (
 )
 from schedule_manager.people.errors import PersonNotFoundError
 from schedule_manager.core.errors import UnexpectedStateError
-from schedule_manager.core.ranges.constants import DB_BEGIN
+from schedule_manager.core.ranges.constants import DB_BEGIN, NEVER_END
 
 
 class Constraints(Enum):
@@ -24,11 +24,11 @@ class Constraints(Enum):
     def _generate_next_value_(name, start, count, last_values):
         return name.lower()
 
-    PERSON_CAPABILITIES_PERSON_ID_FK = auto()
-    PERSON_CAPABILITIES_BUSINESS_ID_FK = auto()
-    PERSON_CAPABILITIES_WORKSTATION_ID_FK = auto()
-    PERSON_CAPABILITIES_UNIT_ID_FK = auto()
-    PERSON_CAPABILITIES_CAPABILITY_ID_FK = auto()
+    PERSON_CAPABILITIES_PERSON_ID_FKEY = auto()
+    PERSON_CAPABILITIES_BUSINESS_ID_FKEY = auto()
+    PERSON_CAPABILITIES_WORKSTATION_ID_FKEY = auto()
+    PERSON_CAPABILITIES_UNIT_ID_FKEY = auto()
+    PERSON_CAPABILITIES_CAPABILITY_ID_FKEY = auto()
 
 
 
@@ -134,16 +134,16 @@ class CapabilitiesRepository:
                 c_name = e.diag.constraint_name
 
                 if c_name in [
-                    Constraints.PERSON_CAPABILITIES_BUSINESS_ID_FK.value,
-                    Constraints.PERSON_CAPABILITIES_UNIT_ID_FK.value,
-                    Constraints.PERSON_CAPABILITIES_WORKSTATION_ID_FK.value
+                    Constraints.PERSON_CAPABILITIES_BUSINESS_ID_FKEY.value,
+                    Constraints.PERSON_CAPABILITIES_UNIT_ID_FKEY.value,
+                    Constraints.PERSON_CAPABILITIES_WORKSTATION_ID_FKEY.value
                 ]:
                     raise schedule_errors.TargetNotFoundError
 
-                elif c_name == Constraints.PERSON_CAPABILITIES_PERSON_ID_FK.value:
+                elif c_name == Constraints.PERSON_CAPABILITIES_PERSON_ID_FKEY.value:
                     raise PersonNotFoundError
 
-                elif c_name == Constraints.PERSON_CAPABILITIES_CAPABILITY_ID_FK.value:
+                elif c_name == Constraints.PERSON_CAPABILITIES_CAPABILITY_ID_FKEY.value:
                     raise schedule_errors.CapabilityNameError
 
                 raise
@@ -327,3 +327,7 @@ WHERE id = %s;
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             return cur.rowcount > 0
+    @staticmethod
+    async def add_capability_resource(person_id:UUID, target_person_id:UUID, conn:AsyncConnection[DictRow]) -> None:
+        await CapabilitiesRepository.add(target_person_id, person_id, CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END), conn)
+        await CapabilitiesRepository.add(target_person_id, person_id, CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END), conn)

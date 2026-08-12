@@ -28,7 +28,9 @@ CREATE TABLE capabilities (
             'workstation_lifecycle_manage',
 
             'workstation_work_manage',
-            'workstation_work_read'
+            'workstation_work_read',
+            'capabilities_manage',
+            'capabilities_read'
         )
     )
 );
@@ -53,5 +55,7 @@ VALUES
     ('unit_lifecycle_manage'),
     ('workstation_lifecycle_manage'),
     ('workstation_work_manage'),
-    ('workstation_work_read');
+    ('workstation_work_read'),
+    ('capabilities_manage'),
+    ('capabilities_read');
     

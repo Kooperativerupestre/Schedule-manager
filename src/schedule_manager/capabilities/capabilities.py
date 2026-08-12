@@ -22,7 +22,7 @@ class Resource(AutoLowerEnum):
 
 
     WORKSTATION_WORK = auto()
-    
+    CAPABILITIES = auto()
     MEMBERS = auto()
 
 
@@ -51,7 +51,7 @@ SCOPE_BY_RESOURCE = {
     Resource.WORKSTATION_LIFECYCLE: Scope.UNIT,
     
     Resource.WORKSTATION_WORK: Scope.WORKSTATION,
-    
+    Resource.CAPABILITIES: Scope.BUSINESS,
     Resource.MEMBERS: Scope.BUSINESS,
 }
 

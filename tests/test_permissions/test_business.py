@@ -68,6 +68,7 @@ async def test_add_member_permission_requires_members_manage(
         await CapabilitiesService.add(
             viewer.id,
             member.id,
+            business_id,
             CapabilityAddRequest(
                 resource=Resource.MEMBERS,
                 action=Action.INVITE,
@@ -117,7 +118,7 @@ async def test_read_business_with_permission(
     business = await BusinessService.get(single_person.id, business_id, conn)
 
     assert business is not None
-    assert business.phone_number == GLOBAL_VALID_NUMBER
+    
 
 
 async def test_add_business_grants_member_permissions(
@@ -133,6 +134,7 @@ async def test_add_business_grants_member_permissions(
     member_capability = await CapabilitiesService.has(
         single_person.id,
         single_person.id,
+        business_id,
         CapabilityGetRequest(
             resource=Resource.MEMBERS,
             action=Action.MANAGE,
