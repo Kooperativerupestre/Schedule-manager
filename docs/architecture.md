@@ -92,3 +92,16 @@ This is planned but not yet implemented, and the mechanism is undecided:
 
 # Architecture 1.1
 
+I noticed an inconsistency in the old capability-validation design of the capabilities service. It validated one person's capability over another person by checking whether the executor had that same capability. I consider this a confusing and poor system design.
+
+Given A and B:
+
+A → I want to grant UNIT MANAGE to B
+
+— before —
+
+Verification: Does A have UNIT MANAGE?
+
+— after —
+
+Verification: Does A have CAPABILITIES MANAGE?
