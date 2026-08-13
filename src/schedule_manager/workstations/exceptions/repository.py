@@ -15,6 +15,9 @@ from schedule_manager.workstations.exceptions.models import (
 )
 from uuid import UUID
 from schedule_manager.core.errors import UnexpectedStateError
+from schedule_manager.core.errors import OverlappingSchedulesError
+from psycopg import errors as psycopg_errors
+from schedule_manager.utils.service_logging import log_repository_error
 from schedule_manager.workstations.schedules.ranges import ScheduleRange
 
 @namespace
@@ -32,9 +35,13 @@ VALUES (%s, %s, %s, %s) RETURNING id;
             workstation.description,
         )
 
-        async with conn.cursor() as cur:
-            await cur.execute(query, values)
-            r = await cur.fetchone()
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(query, values)
+                r = await cur.fetchone()
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(WorkstationExceptionsRepository, "add", error, {"workstation_id": str(workstation.workstation_id)})
+            raise OverlappingSchedulesError
         if r is None:
             raise UnexpectedStateError
         return r['id']
@@ -65,10 +72,10 @@ SELECT * FROM workstation_exceptions WHERE id = %s;
         if r is None:
             return None
         return WorkstationExceptionGetOutput(
-            workstation_id=r.id,
+            workstation_id=r.workstation_id,
             status=ScheduleTimeStatus(r.status.upper()),
             description=r.description,
-            range=convert_to_schedule_range(r.range)
+            range=convert_to_schedule_range(r.exception_range)
         )
 
     @staticmethod
@@ -96,9 +103,13 @@ UPDATE workstation_exceptions SET {', '.join(updates)} WHERE id = %s;
 """
         values.append(id)
 
-        async with conn.cursor() as cur:
-            await cur.execute(query, values)
-            row_count = cur.rowcount
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(query, values)
+                row_count = cur.rowcount
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(WorkstationExceptionsRepository, "update", error, {"exception_id": str(id)})
+            raise OverlappingSchedulesError
         return row_count > 0
     @staticmethod
     async def has_overlapping_interval(
@@ -111,8 +122,8 @@ UPDATE workstation_exceptions SET {', '.join(updates)} WHERE id = %s;
         SELECT 1
         FROM workstation_exceptions
         WHERE workstation_id = %s
-        AND validity_range && %s::TSTZRANGE
-        AND (status IN ('scheduled', 'completed'))
+        AND exception_range && %s::TSTZRANGE
+        AND (status IN ('available', 'unavailable'))
     );
     """
 

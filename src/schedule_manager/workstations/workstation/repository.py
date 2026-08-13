@@ -14,6 +14,7 @@ from schedule_manager.workstations.workstation.models import (
     WorkstationGetOutput,
     WorkstationRow,
 )
+from schedule_manager.utils.service_logging import log_repository_error
 
 
 @namespace
@@ -31,7 +32,8 @@ INSERT INTO workstations (unit_id, name, description) VALUES (%s, %s, %s) RETURN
                 r = await cur.fetchone()
             if r is None:
                 raise UnexpectedStateError
-        except psycopg_errors.ForeignKeyViolation:
+        except psycopg_errors.ForeignKeyViolation as error:
+            log_repository_error(WorkstationRepository, "add", error, {"unit_id": str(workstation.unit_id)})
             raise WorkstationNotFoundError
         return WorkstationAddOutput(id=r["id"], created_at=r["created_at"])
 

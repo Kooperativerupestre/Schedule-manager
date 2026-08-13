@@ -6,6 +6,7 @@ from psycopg import errors
 from schedule_manager.auth.errors import UniquePersonProviderViolatedError, UniqueProviderIdentifierViolatedError
 from schedule_manager.utils.namespace import namespace
 from schedule_manager.core.errors import UnexpectedStateError
+from schedule_manager.utils.service_logging import log_repository_error
 
 
 def authentication_row_to_model_authentication(row:AuthenticationRow) -> Authentication:
@@ -42,6 +43,7 @@ INSERT INTO authentication (person_id, provider, identifier, credentials) VALUES
                 raise UnexpectedStateError
             return r['id']
         except errors.UniqueViolation as e:
+            log_repository_error(AuthenticationRepository, "add", e, {"person_id": str(person_id)})
             constraint = e.diag.constraint_name
 
             if constraint == "authentication_person_id_provider_key":

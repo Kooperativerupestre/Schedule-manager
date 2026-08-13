@@ -10,7 +10,7 @@ class WorkstationExceptionRow:
     id:UUID
     workstation_id:UUID
     status:str
-    range:DB_Range
+    exception_range:DB_Range
     description:str | None
 
 @dataclass(frozen=True)

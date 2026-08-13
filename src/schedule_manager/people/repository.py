@@ -5,6 +5,7 @@ from uuid import UUID
 from schedule_manager.people.models import UpdatePerson, AddPersonInput, AddPersonOutput, GetPerson
 from schedule_manager.common.missing import MISSING
 from schedule_manager.core.errors import PhoneNumberAlreadyExistsError, UnexpectedStateError
+from schedule_manager.utils.service_logging import log_repository_error
 
 
 
@@ -23,7 +24,8 @@ class PeopleRepository:
                 if result is None:
                     raise UnexpectedStateError
                 return result
-        except errors.UniqueViolation:
+        except errors.UniqueViolation as error:
+            log_repository_error(PeopleRepository, "add", error, {"phone_number": person.phone_number})
             raise PhoneNumberAlreadyExistsError('Phone number {} already exists'.format(person.phone_number))
         
 
@@ -81,7 +83,8 @@ class PeopleRepository:
                 row_count = cur.rowcount
                 return row_count > 0
 
-        except errors.UniqueViolation:
+        except errors.UniqueViolation as error:
+            log_repository_error(PeopleRepository, "update", error, {"person_id": str(id)})
             raise PhoneNumberAlreadyExistsError(
                 f"Phone number {update.phone_number} already exists"
             )

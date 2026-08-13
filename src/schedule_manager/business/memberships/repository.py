@@ -22,7 +22,8 @@ from schedule_manager.business.memberships.status import (
     MembershipStatus
 )
 
-from schedule_manager.core.errors import EmailAlreadyExistsError
+from schedule_manager.core.errors import EmailAlreadyExistsError, OverlappingSchedulesError
+from schedule_manager.utils.service_logging import log_repository_error
 
 @namespace
 class MembershipRepository:
@@ -42,6 +43,7 @@ class MembershipRepository:
                 id = row["id"]
                 return id
         except psycopg_errors.ForeignKeyViolation as e:
+            log_repository_error(MembershipRepository, "add", e, {"person_id": str(person_id), "business_id": str(business_id)})
             match e.diag.constraint_name:
                 case "business_memberships_business_id_fkey":
                     raise schedule_errors_business.BusinessNotFoundError
@@ -49,6 +51,9 @@ class MembershipRepository:
                     raise PersonNotFoundError
                 case _:
                     raise
+        except psycopg_errors.ExclusionViolation as e:
+            log_repository_error(MembershipRepository, "add", e, {"person_id": str(person_id), "business_id": str(business_id)})
+            raise OverlappingSchedulesError
     @staticmethod
     async def has(person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow], state:MembershipStatus | None) -> bool:
         if state is None:
@@ -145,12 +150,14 @@ INSERT INTO business_membership_invites (business_id, email) VALUES (%s, %s) RET
                     raise CannotCreateBusinessMembershipInviteError
                 return r["id"]
         except psycopg_errors.ForeignKeyViolation as e:
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
             match e.diag.constraint_name:
                 case "business_membership_invites_business_id_fkey":
                     raise schedule_errors_business.BusinessNotFoundError
                 case _:
                     raise
         except psycopg_errors.UniqueViolation as e:
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
             match e.diag.constraint_name:
                 case "business_membership_invites_email_key":
                     raise EmailAlreadyExistsError
@@ -158,6 +165,9 @@ INSERT INTO business_membership_invites (business_id, email) VALUES (%s, %s) RET
                     raise InviteAlreadyExistsError
                 case _:
                     raise
+        except psycopg_errors.ExclusionViolation as e:
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
+            raise OverlappingSchedulesError
     @staticmethod
     async def end(id:UUID, conn:AsyncConnection[DictRow]) -> bool:
         query = """

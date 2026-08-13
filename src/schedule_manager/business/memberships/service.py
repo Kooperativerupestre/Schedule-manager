@@ -10,7 +10,12 @@ from schedule_manager.business.memberships.validator import MembershipValidator
 from schedule_manager.capabilities.capabilities import Action, Scope
 from schedule_manager.business.memberships.models import BusinessMembership, BusinessMembershipInvite
 from schedule_manager.capabilities.repository import CapabilitiesRepository
+from schedule_manager.utils.service_logging import log_service_errors, model_context
+import logging
 
+logger = logging.getLogger(__name__)
+
+@log_service_errors
 @namespace
 class MembershipService:
     @staticmethod
@@ -20,6 +25,7 @@ class MembershipService:
             await MembershipRepository.add(target_person_id, business_id, conn)
         except Exception:
             raise
+        logger.info("membership.added", extra={"actor_id": str(person_id), "person_id": str(target_person_id), "business_id": str(business_id)})
     @staticmethod
     async def end(person_id:UUID, target_person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.MANAGE, conn)
@@ -27,6 +33,7 @@ class MembershipService:
         
         if not r:
             raise NotBusinessMembershipError
+        logger.info("membership.ended", extra={"actor_id": str(person_id), "person_id": str(target_person_id), "business_id": str(business_id)})
     
     @staticmethod
     async def has(person_id:UUID, target_person_id:UUID, business_id:UUID, status:MembershipStatus | None, conn:AsyncConnection[DictRow]) -> bool:
@@ -42,12 +49,14 @@ class MembershipService:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.READ, conn)
         return await MembershipRepository.get(target_person_id, business_id, conn, status)
 
+@log_service_errors
 @namespace
 class MembershipInviteService:
     @staticmethod
     async def add(person_id:UUID, email:EmailRequest, business_id:UUID, conn:AsyncConnection[DictRow]) -> UUID:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.INVITE, conn)
         id = await MembershipInvitesRepository.add(business_id, email.email, conn)
+        logger.info("membership_invite.created", extra={"actor_id": str(person_id), "business_id": str(business_id), "invite_id": str(id), "request": model_context(email)})
         return id
     @staticmethod
     async def end(person_id:UUID, invite_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
@@ -56,6 +65,7 @@ class MembershipInviteService:
         r = await MembershipInvitesRepository.end(invite_id, conn)
         if not r:
             raise MembershipInviteNotFoundError
+        logger.info("membership_invite.ended", extra={"actor_id": str(person_id), "business_id": str(business_id), "invite_id": str(invite_id)})
     @staticmethod
     async def get(person_id:UUID, invite_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> BusinessMembershipInvite | None:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.READ, conn)

@@ -33,6 +33,10 @@ from schedule_manager.holidays.repository import HolidayRepository
 # exceptions
 
 from schedule_manager.workstations.exceptions.repository import WorkstationExceptionsRepository
+from schedule_manager.utils.service_logging import log_service_errors, model_context
+import logging
+
+logger = logging.getLogger(__name__)
 
 # schedule returns
 
@@ -61,15 +65,18 @@ class RequestTranslator:
             schedule_range=ScheduleRequestTranslator.schedule_range_request_to_schedule_range(request.schedule_range) if request.schedule_range is not MISSING else MISSING,
             status=request.status
         )
+@log_service_errors
 @namespace
 class ScheduleService:
     @staticmethod
     async def add(person_id:UUID, request:ScheduleAddRequest, conn:AsyncConnection[DictRow]) -> UUID:
         await CapabilitiesValidator.validate_manage_capability(person_id, Resource.WORKSTATION_WORK, request.workstation_id, conn)
 
-        return await ScheduleRepository.add(
+        schedule_id = await ScheduleRepository.add(
             RequestTranslator.add_request_to_add_input(request), conn
         )
+        logger.info("schedule.created", extra={"actor_id": str(person_id), "workstation_id": str(request.workstation_id), "person_id": str(request.person_id), "schedule_id": str(schedule_id), "request": model_context(request)})
+        return schedule_id
     @staticmethod
     async def delete(person_id:UUID, workstation_id:UUID, schedule_id:UUID, conn:AsyncConnection[DictRow]) -> None:
         await CapabilitiesValidator.validate_manage_capability(person_id, Resource.WORKSTATION_WORK, workstation_id, conn)
@@ -77,6 +84,7 @@ class ScheduleService:
         r=  await ScheduleRepository.delete(schedule_id, conn)
         if not r:
             raise ScheduleNotFoundError
+        logger.info("schedule.deleted", extra={"actor_id": str(person_id), "workstation_id": str(workstation_id), "schedule_id": str(schedule_id)})
     @staticmethod
     async def update(person_id:UUID, workstation_id:UUID, schedule_id:UUID, request:ScheduleChangesRequest, conn:AsyncConnection[DictRow]) -> None:
         await CapabilitiesValidator.validate_manage_capability(person_id, Resource.WORKSTATION_WORK, workstation_id, conn)
@@ -86,6 +94,7 @@ class ScheduleService:
         )
         if not r:
             raise ScheduleNotFoundError
+        logger.info("schedule.updated", extra={"actor_id": str(person_id), "workstation_id": str(workstation_id), "schedule_id": str(schedule_id), "request": model_context(request)})
     @staticmethod
     async def get(person_id:UUID, workstation_id:UUID, schedule_id:UUID, conn:AsyncConnection[DictRow]) -> ScheduleGetOutput | None:
         await CapabilitiesValidator.validate_read_capability(person_id, Resource.WORKSTATION_WORK, workstation_id, conn)
@@ -116,6 +125,7 @@ class ScheduleService:
             holiday_range,
             conn,
         ):
+            logger.info("schedule.rejected", extra={"actor_id": str(person_id), "business_id": str(business_id), "unit_id": str(unit_id), "workstation_id": str(workstation_id), "reason": ScheduleReturns.BUSINESS_HOLIDAY_OVERLAPPING.name, "request": model_context(interval)})
             return ScheduleReturns.BUSINESS_HOLIDAY_OVERLAPPING
 
         if await HolidayRepository.has_overlapping_interval(
@@ -124,6 +134,7 @@ class ScheduleService:
             holiday_range,
             conn,
         ):
+            logger.info("schedule.rejected", extra={"actor_id": str(person_id), "business_id": str(business_id), "unit_id": str(unit_id), "workstation_id": str(workstation_id), "reason": ScheduleReturns.UNIT_HOLIDAY_OVERLAPPING.name, "request": model_context(interval)})
             return ScheduleReturns.UNIT_HOLIDAY_OVERLAPPING
 
         if await HolidayRepository.has_overlapping_interval(
@@ -132,6 +143,7 @@ class ScheduleService:
             holiday_range,
             conn,
         ):
+            logger.info("schedule.rejected", extra={"actor_id": str(person_id), "business_id": str(business_id), "unit_id": str(unit_id), "workstation_id": str(workstation_id), "reason": ScheduleReturns.WORKSTATION_HOLIDAY_OVERLAPPING.name, "request": model_context(interval)})
             return ScheduleReturns.WORKSTATION_HOLIDAY_OVERLAPPING
 
         if await WorkstationExceptionsRepository.has_overlapping_interval(
@@ -139,6 +151,7 @@ class ScheduleService:
             schedule_range,
             conn,
         ):
+            logger.info("schedule.rejected", extra={"actor_id": str(person_id), "business_id": str(business_id), "unit_id": str(unit_id), "workstation_id": str(workstation_id), "reason": ScheduleReturns.EXCEPTION_OVERLAPPING.name, "request": model_context(interval)})
             return ScheduleReturns.SCHEDULE_OVERLAPPING
 
         if await ScheduleRepository.has_overlapping_interval(
@@ -146,6 +159,7 @@ class ScheduleService:
             schedule_range,
             conn,
         ):
+            logger.info("schedule.rejected", extra={"actor_id": str(person_id), "business_id": str(business_id), "unit_id": str(unit_id), "workstation_id": str(workstation_id), "reason": ScheduleReturns.SCHEDULE_OVERLAPPING.name, "request": model_context(interval)})
             return ScheduleReturns.SCHEDULE_OVERLAPPING
 
         return ScheduleReturns.OK

@@ -6,6 +6,7 @@ from uuid import UUID
 from schedule_manager.core.errors import UnexpectedStateError
 from schedule_manager.common.missing import MISSING
 from psycopg import errors as psycopg_errors
+from schedule_manager.utils.service_logging import log_repository_error
 
 @namespace
 class UnitRepository:
@@ -23,7 +24,8 @@ id, created_at, business_id, phone_number, description, name;
                 r = await cur.fetchone()
             if r is None:
                 raise UnexpectedStateError
-        except psycopg_errors.ForeignKeyViolation:
+        except psycopg_errors.ForeignKeyViolation as error:
+            log_repository_error(UnitRepository, "add", error, {"business_id": str(unit.business_id)})
             raise ValueError(f"Business with id {unit.business_id} does not exist")
         return UnitAddOutput(
             id=r.id,

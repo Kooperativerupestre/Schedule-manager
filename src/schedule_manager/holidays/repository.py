@@ -10,6 +10,7 @@ from psycopg import sql
 from schedule_manager.utils.namespace import namespace
 from schedule_manager.holidays.models import Holiday, HolidayChanges, HolidayRange, HolidayRow, db_range_to_holiday_range, holiday_range_to_db
 from schedule_manager.core.errors import UnexpectedStateError
+from schedule_manager.utils.service_logging import log_repository_error
 
 
 @dataclass(frozen=True)
@@ -56,13 +57,16 @@ RETURNING id;
 
             return row["id"]
 
-        except psycopg_errors.ForeignKeyViolation:
+        except psycopg_errors.ForeignKeyViolation as error:
+            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
             raise config.foreign_key_error()
 
-        except psycopg_errors.ExclusionViolation:
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
             raise OverlappingSchedulesError
 
-        except psycopg_errors.NotNullViolation:
+        except psycopg_errors.NotNullViolation as error:
+            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
             raise NullDataError
     @staticmethod
     async def delete(
@@ -126,7 +130,8 @@ WHERE id = %s;
 
             return UpdateOutputs.OK
 
-        except psycopg_errors.ExclusionViolation:
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(HolidayRepository, "update", error, {"holiday_id": str(holiday_id), "table": config.table_name.as_string(conn)})
             raise OverlappingSchedulesError
     @staticmethod
     async def get(

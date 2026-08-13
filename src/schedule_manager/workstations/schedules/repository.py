@@ -7,6 +7,10 @@ from schedule_manager.workstations.schedules.ranges import convert_to_db_range, 
 from schedule_manager.common.missing import MISSING, _Missing
 from schedule_manager.core.errors import UnexpectedStateError
 from schedule_manager.workstations.status import ScheduleStatus
+from psycopg import errors as psycopg_errors
+from schedule_manager.core.errors import OverlappingSchedulesError
+from schedule_manager.utils.service_logging import log_repository_error
+
 
 
 @namespace
@@ -17,10 +21,13 @@ class ScheduleRepository:
 INSERT INTO schedules (workstation_id, person_id, schedule_range, status) VALUES (%s, %s, %s, %s) RETURNING id;
 """
         values = (schedule.workstation_id, schedule.person_id, convert_to_db_range(schedule.schedule_range), schedule.status.value)
-
-        async with conn.cursor() as cur:
-            await cur.execute(query, values)
-            r = await cur.fetchone()
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(query, values)
+                r = await cur.fetchone()
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(ScheduleRepository, "add", error, {"workstation_id": str(schedule.workstation_id), "person_id": str(schedule.person_id)})
+            raise OverlappingSchedulesError
         if r is None:
             raise UnexpectedStateError
         return r['id']
@@ -59,9 +66,13 @@ UPDATE schedules SET {', '.join(updates)} WHERE id = %s;
 """
         values.append(id)
 
-        async with conn.cursor() as cur:
-            await cur.execute(query, values)
-            row_count = cur.rowcount
+        try:
+            async with conn.cursor() as cur:
+                await cur.execute(query, values)
+                row_count = cur.rowcount
+        except psycopg_errors.ExclusionViolation as error:
+            log_repository_error(ScheduleRepository, "update", error, {"schedule_id": str(id)})
+            raise OverlappingSchedulesError
         return row_count > 0
     @staticmethod
     async def get(id:UUID, conn:AsyncConnection[DictRow]) -> ScheduleGetOutput | None:

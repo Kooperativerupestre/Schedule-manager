@@ -17,6 +17,7 @@ from schedule_manager.capabilities.models import (
 from schedule_manager.people.errors import PersonNotFoundError
 from schedule_manager.core.errors import UnexpectedStateError
 from schedule_manager.core.ranges.constants import DB_BEGIN, NEVER_END
+from schedule_manager.utils.service_logging import log_repository_error
 
 
 class Constraints(Enum):
@@ -123,13 +124,16 @@ class CapabilitiesRepository:
                 await cur.execute(query, values)
                 r = await cur.fetchone()
 
-            except psycopg_errors.ExclusionViolation:
+            except psycopg_errors.ExclusionViolation as error:
+                log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
                 raise schedule_errors.DuplicateCapabilityError
 
-            except psycopg_errors.NotNullViolation:
+            except psycopg_errors.NotNullViolation as error:
+                log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
                 raise schedule_errors.NullCapabilityError
 
             except psycopg_errors.ForeignKeyViolation as e:
+                log_repository_error(CapabilitiesRepository, "add", e, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
 
                 c_name = e.diag.constraint_name
 

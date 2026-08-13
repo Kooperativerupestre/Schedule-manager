@@ -11,8 +11,13 @@ from schedule_manager.core.errors import NotFoundError
 
 
 from schedule_manager.workstations.holidays.repository import HolidayConfigWorkstationHolidays as HolidayRepositoryContext
+from schedule_manager.utils.service_logging import log_service_errors, model_context
+import logging
+
+logger = logging.getLogger(__name__)
 
 
+@log_service_errors
 @namespace
 class WorkstationHolidayService:
     @staticmethod
@@ -21,6 +26,7 @@ class WorkstationHolidayService:
 
         try:
             id = await HolidayRepository.add(HolidayRepositoryContext, business_id, RequestTranslator.add_request_to_holiday(request), conn)
+            logger.info("workstation_holiday.created", extra={"actor_id": str(person_id), "workstation_id": str(business_id), "holiday_id": str(id), "request": model_context(request)})
             return id
         except Exception:
             raise
@@ -32,6 +38,7 @@ class WorkstationHolidayService:
 
         if not has_deleted:
             raise NotFoundError
+        logger.info("workstation_holiday.deleted", extra={"actor_id": str(person_id), "workstation_id": str(business_id), "holiday_id": str(holiday_id)})
     @staticmethod
     async def update(person_id:UUID, holiday_id:UUID, business_id:UUID, changes:HolidayUpdateRequest, conn:AsyncConnection[DictRow]) -> None:
         await CapabilitiesValidator.validate_manage_capability(person_id, Resource.WORKSTATION_HOLIDAYS, business_id, conn)
@@ -40,6 +47,7 @@ class WorkstationHolidayService:
         if not has_updated:
             raise NotFoundError
         await conn.commit()
+        logger.info("workstation_holiday.updated", extra={"actor_id": str(person_id), "workstation_id": str(business_id), "holiday_id": str(holiday_id), "request": model_context(changes)})
     @staticmethod
     async def get(person_id:UUID, workstation_id:UUID, holiday_id:UUID, conn:AsyncConnection[DictRow]) -> Holiday | None:
         await CapabilitiesValidator.validate_read_capability(person_id, Resource.WORKSTATION_HOLIDAYS, workstation_id, conn)

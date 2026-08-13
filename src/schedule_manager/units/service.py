@@ -13,6 +13,10 @@ from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.models import CapabilityInput
 from schedule_manager.core.ranges.constants import NEVER_END
+from schedule_manager.utils.service_logging import log_service_errors, model_context
+import logging
+
+logger = logging.getLogger(__name__)
 
 @namespace
 class RequestTranslator:
@@ -33,6 +37,7 @@ class RequestTranslator:
             business_id=MISSING
         )
 
+@log_service_errors
 @namespace
 class UnitService:
     @staticmethod
@@ -48,6 +53,7 @@ class UnitService:
         await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION_LIFECYCLE, Action.MANAGE, NEVER_END), conn)
         await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.MANAGE, NEVER_END), conn)
         await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.READ, NEVER_END), conn)
+        logger.info("unit.created", extra={"actor_id": str(person_id), "unit_id": str(response.id), "business_id": str(unit.business_id), "request": model_context(unit)})
         return response.id
     @staticmethod
     async def delete(person_id:UUID, business_id:UUID, unit_id:UUID, conn:AsyncConnection[DictRow]) -> None:
@@ -59,6 +65,7 @@ class UnitService:
         )
         if not r:
             raise UnitNotFoundError
+        logger.info("unit.deleted", extra={"actor_id": str(person_id), "unit_id": str(unit_id), "business_id": str(business_id)})
 
     @staticmethod
     async def update(person_id:UUID, unit_id:UUID, request:UnitUpdateRequest, conn:AsyncConnection[DictRow]) -> None:
@@ -71,9 +78,9 @@ class UnitService:
         )
         if not r:
             raise UnitNotFoundError
+        logger.info("unit.updated", extra={"actor_id": str(person_id), "unit_id": str(unit_id), "request": model_context(request)})
     @staticmethod
     async def get(person_id:UUID, unit_id:UUID, conn:AsyncConnection[DictRow]) -> UnitGetOutput | None:
         await UnitValidator.validate_read_capability(person_id, unit_id, conn)
 
         return await UnitRepository.get(unit_id, conn)
-

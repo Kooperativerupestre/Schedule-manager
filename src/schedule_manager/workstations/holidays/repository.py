@@ -4,8 +4,7 @@ from schedule_manager.workstations.workstation.errors import WorkstationNotFound
 
 HolidayConfigWorkstationHolidays = HolidayRepositoryContext(
     table_name=sql.Identifier("workstation_holidays"),
-    owner_column=sql.Identifier("workstation"),
+    owner_column=sql.Identifier("workstation_id"),
     foreign_key_error=WorkstationNotFoundError
 )
-
 

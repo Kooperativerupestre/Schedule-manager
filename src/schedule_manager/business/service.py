@@ -13,6 +13,10 @@ from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.capabilities.models import CapabilityInput
 from psycopg.rows import DictRow
 from schedule_manager.core.ranges.constants import NEVER_END
+from schedule_manager.utils.service_logging import log_service_errors, model_context
+import logging
+
+logger = logging.getLogger(__name__)
 
 @namespace
 class RequestTranslator:
@@ -34,6 +38,7 @@ class RequestTranslator:
 
 
         
+@log_service_errors
 @namespace
 class BusinessService:
     @staticmethod
@@ -48,6 +53,7 @@ class BusinessService:
         await MembershipRepository.add(person_id, business_id, conn)
         await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END), conn)
         await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END), conn)
+        logger.info("business.created", extra={"actor_id": str(person_id), "business_id": str(business_id), "request": model_context(request)})
         return business_id
         
     @staticmethod
@@ -56,6 +62,7 @@ class BusinessService:
         r = await BusinessRepository.delete(business_id, conn)
         if not r:
             raise BusinessNotFoundError
+        logger.info("business.deleted", extra={"actor_id": str(person_id), "business_id": str(business_id)})
     @staticmethod
     async def get(person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> BusinessOutput | None:
         await BusinessValidator.validate_read_business_capability(person_id, business_id, conn)
@@ -67,3 +74,4 @@ class BusinessService:
         r = await BusinessRepository.update(business_id, RequestTranslator.update_request_to_business(request), conn)
         if r == 0:
             raise BusinessNotFoundError
+        logger.info("business.updated", extra={"actor_id": str(person_id), "business_id": str(business_id), "request": model_context(request)})
