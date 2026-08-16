@@ -38,14 +38,17 @@ class BusinessMembershipInviteRow:
     id:UUID
     created_at:datetime
     expires_at:datetime
-    accepted_at:datetime | None
 
 @dataclass(frozen=True)
 class BusinessMembershipInvite:
     id:UUID
     created_at:datetime
     expires_at:datetime
-    accepted_at:datetime | None
+
+@dataclass(frozen=True)
+class BusinessMembershipInviteInput:
+    email:str
+    expires_at:datetime
 
 # Translator
 
@@ -64,6 +67,5 @@ class ModelTranslator:
         return BusinessMembershipInvite(
             id=row.id,
             created_at=row.created_at,
-            expires_at=row.expires_at,
-            accepted_at=row.accepted_at
+            expires_at=row.expires_at
         )

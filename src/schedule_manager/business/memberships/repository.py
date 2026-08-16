@@ -16,6 +16,7 @@ from schedule_manager.business.memberships.models import (
     ModelTranslator,
     BusinessMembershipInvite,
     BusinessMembershipInviteRow,
+    BusinessMembershipInviteInput
 )
 
 from schedule_manager.business.memberships.status import (
@@ -137,11 +138,11 @@ WHERE person_id = %s AND business_id = %s AND upper(validity_range) IS NULL;
 @namespace
 class MembershipInvitesRepository:
     @staticmethod
-    async def add(business_id:UUID, email:str, conn:AsyncConnection[DictRow]) -> UUID:
+    async def add(business_id:UUID, data:BusinessMembershipInviteInput, conn:AsyncConnection[DictRow]) -> UUID:
         query = """
-INSERT INTO business_membership_invites (business_id, email) VALUES (%s, %s) RETURNING id;
+INSERT INTO business_membership_invites (business_id, email, expires_at) VALUES (%s, %s, %s) RETURNING id;
 """
-        values = (business_id, email)
+        values = (business_id, data.email, data.expires_at)
         try:
             async with conn.cursor() as cur:
                 await cur.execute(query, values)
@@ -150,14 +151,14 @@ INSERT INTO business_membership_invites (business_id, email) VALUES (%s, %s) RET
                     raise CannotCreateBusinessMembershipInviteError
                 return r["id"]
         except psycopg_errors.ForeignKeyViolation as e:
-            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": data.email})
             match e.diag.constraint_name:
                 case "business_membership_invites_business_id_fkey":
                     raise schedule_errors_business.BusinessNotFoundError
                 case _:
                     raise
         except psycopg_errors.UniqueViolation as e:
-            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": data.email})
             match e.diag.constraint_name:
                 case "business_membership_invites_email_key":
                     raise EmailAlreadyExistsError
@@ -166,7 +167,7 @@ INSERT INTO business_membership_invites (business_id, email) VALUES (%s, %s) RET
                 case _:
                     raise
         except psycopg_errors.ExclusionViolation as e:
-            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": email})
+            log_repository_error(MembershipInvitesRepository, "add", e, {"business_id": str(business_id), "email": data.email})
             raise OverlappingSchedulesError
     @staticmethod
     async def end(id:UUID, conn:AsyncConnection[DictRow]) -> bool:

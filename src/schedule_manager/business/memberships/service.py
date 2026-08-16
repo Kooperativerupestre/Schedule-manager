@@ -1,5 +1,5 @@
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.business.memberships.schemas import EmailRequest
+from schedule_manager.business.memberships.schemas import MembershipInviteRequest
 from schedule_manager.business.memberships.repository import MembershipRepository, MembershipInvitesRepository
 from uuid import UUID
 from schedule_manager.business.memberships.status import MembershipStatus
@@ -8,7 +8,7 @@ from psycopg.rows import DictRow
 from schedule_manager.business.memberships.errors import NotBusinessMembershipError, MembershipInviteNotFoundError
 from schedule_manager.business.memberships.validator import MembershipValidator
 from schedule_manager.capabilities.capabilities import Action, Scope
-from schedule_manager.business.memberships.models import BusinessMembership, BusinessMembershipInvite
+from schedule_manager.business.memberships.models import BusinessMembership, BusinessMembershipInvite, BusinessMembershipInviteInput
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.utils.service_logging import log_service_errors, model_context
 import logging
@@ -53,10 +53,10 @@ class MembershipService:
 @namespace
 class MembershipInviteService:
     @staticmethod
-    async def add(person_id:UUID, email:EmailRequest, business_id:UUID, conn:AsyncConnection[DictRow]) -> UUID:
+    async def add(person_id:UUID, request:MembershipInviteRequest, business_id:UUID, conn:AsyncConnection[DictRow]) -> UUID:
         await MembershipValidator.validate_capability_membership(person_id, business_id, Action.INVITE, conn)
-        id = await MembershipInvitesRepository.add(business_id, email.email, conn)
-        logger.info("membership_invite.created", extra={"actor_id": str(person_id), "business_id": str(business_id), "invite_id": str(id), "request": model_context(email)})
+        id = await MembershipInvitesRepository.add(business_id, BusinessMembershipInviteInput(request.email, request.expires_at), conn)
+        logger.info("membership_invite.created", extra={"actor_id": str(person_id), "business_id": str(business_id), "invite_id": str(id), "request": model_context(request.email)})
         return id
     @staticmethod
     async def end(person_id:UUID, invite_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
