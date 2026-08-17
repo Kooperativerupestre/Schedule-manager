@@ -80,12 +80,16 @@ async def test_end_capability_without_permission_raises_forbidden(
 
 async def test_get_all_capability_without_permission_raises_forbidden(
     conn: AsyncConnection[DictRow],
-    single_person,
+    person_factory,
     business,
 ) -> None:
+    A = await person_factory("31", "1111", conn)
+    B = await person_factory("32", "111123", conn)
+
     with pytest.raises(ForbiddenError):
         await CapabilitiesService.get_all(
-            single_person.id,
+            A.id,
+            B.id,
             business,
             CapabilityGetRequest(
                 resource=Resource.BUSINESS, action=Action.READ, target_id=business
@@ -96,12 +100,15 @@ async def test_get_all_capability_without_permission_raises_forbidden(
 
 async def test_get_last_capability_without_permission_raises_forbidden(
     conn: AsyncConnection[DictRow],
-    single_person,
+    person_factory,
     business,
 ) -> None:
+    A = await person_factory("31", "1111", conn)
+    B = await person_factory("32", "111123", conn)
     with pytest.raises(ForbiddenError):
         await CapabilitiesService.get_last(
-            single_person.id,
+            A.id,
+            B.id,
             business,
             CapabilityGetRequest(
                 resource=Resource.BUSINESS, action=Action.READ, target_id=business
@@ -214,7 +221,7 @@ async def test_end_capability_with_permission(
     business_id = await create_business_with_owner(A.id)
 
     await MembershipService.add(A.id, B.id, business_id, conn)
-    capability_id = await CapabilitiesService.add(
+    await CapabilitiesService.add(
         A.id,
         B.id,
         business_id,
@@ -239,6 +246,7 @@ async def test_get_all_capability_with_permission(
     await CapabilitiesService.get_all(
         single_person.id,
         single_person.id,
+        business_id,
         CapabilityGetRequest(
             resource=Resource.UNIT, action=Action.MANAGE, target_id=unit_id
         ),
@@ -258,6 +266,7 @@ async def test_get_last_capability_with_permission(
     await CapabilitiesService.get_last(
         single_person.id,
         single_person.id,
+        business_id,
         CapabilityGetRequest(
             resource=Resource.UNIT, action=Action.MANAGE, target_id=unit_id
         ),

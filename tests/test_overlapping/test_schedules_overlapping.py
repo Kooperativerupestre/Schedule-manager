@@ -63,7 +63,7 @@ async def test_same_person_schedule_interval_only_allows_one_insert(
     )
     business_id = await create_business_with_owner(owner.id, setup_conn)
     unit_id = await create_unit_with_owner(owner.id, business_id, setup_conn)
-    first_workstation_id = await create_workstation_with_owner(
+    await create_workstation_with_owner(
         owner.id, unit_id, setup_conn
     )
     second_workstation_id = await create_workstation_with_owner(

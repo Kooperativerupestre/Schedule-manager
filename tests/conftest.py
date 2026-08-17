@@ -76,8 +76,6 @@ async def person_factory(conn: AsyncConnection[DictRow]):
             _conn,
             AddPersonInput(name, phone_number),
         )
-        if connection is not None:
-            await connection.commit()
         return person
 
     return _create_person
