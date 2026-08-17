@@ -217,15 +217,15 @@ class CapabilitiesService:
         )
 
     @staticmethod
-    async def get_all(person_id:UUID, target_person_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow]) -> list[CapabilityAssignment]:
+    async def get_all(person_id:UUID, target_person_id:UUID, business_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow]) -> list[CapabilityAssignment]:
         if person_id != target_person_id:
-            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES , target_person_id, conn)
+            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES , business_id, conn)
         return await CapabilitiesRepository.get_all_from_person(person_id, request.target_id,
                                                                 RequestTranslator.capability_get_request_to_capability(request), conn)
     @staticmethod
-    async def get_last(person_id:UUID, target_person_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow], k:int = 1) -> list[CapabilityAssignment]:
+    async def get_last(person_id:UUID, target_person_id:UUID, business_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow], k:int = 1) -> list[CapabilityAssignment]:
         if person_id != target_person_id:
-            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES, target_person_id, conn)
+            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES, business_id, conn)
         return await CapabilitiesRepository.get_last(person_id, target_person_id,
                                                     RequestTranslator.capability_get_request_to_capability(request), conn, k)
     
