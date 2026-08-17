@@ -3,7 +3,7 @@ from uuid import UUID
 from schedule_manager.common.missing import _Missing
 from schedule_manager.core.ranges.models import DB_Range
 from schedule_manager.core.ranges.constants import STANDARD_YEAR
-from datetime import datetime
+from datetime import UTC, datetime
 
 class HolidayDatetime:
     def __init__(self, month:int, day:int, minute:int, hour:int, second:int, microssecond:int):
@@ -14,7 +14,8 @@ class HolidayDatetime:
             minute=minute,
             hour=hour,
             second=second,
-            microsecond=microssecond
+            microsecond=microssecond,
+            tzinfo=UTC
         )
 @dataclass(frozen=True)
 class HolidayRange:

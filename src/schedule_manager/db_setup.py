@@ -15,7 +15,7 @@ async def database_exists(conn: psycopg.AsyncConnection[DictRow], dbname: str) -
     return row is not None
 
 async def setup_database(dbname:str) -> None:
-    async for conn in get_transaction():
+    async with get_transaction() as conn:
         exists = await database_exists(conn, dbname)
         if not exists:
             await create_database(conn, dbname)

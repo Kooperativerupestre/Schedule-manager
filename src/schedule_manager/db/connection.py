@@ -4,6 +4,7 @@ from typing import AsyncGenerator
 from psycopg import AsyncConnection
 from psycopg.rows import dict_row, DictRow
 import psycopg
+from contextlib import asynccontextmanager
 
 settings = Settings() # type: ignore
 
@@ -25,31 +26,32 @@ test_pool = AsyncConnectionPool(
 
 
 
-async def open_pool() -> None:
-    await pool.open()
+async def open_pool(connection_pool: AsyncConnectionPool) -> None:
+    await connection_pool.open()
 
-async def close_pool() -> None:
-    await pool.close()
-
-async def open_test_pool() -> None:
-    await test_pool.open()
-async def close_test_pool() -> None:
-    await test_pool.close()
-
+async def close_pool(connection_pool: AsyncConnectionPool) -> None:
+    await connection_pool.close()
+@asynccontextmanager
 async def get_connection() -> AsyncGenerator[AsyncConnection[DictRow], None]:
     async with pool.connection() as conn:
         yield conn
+@asynccontextmanager
 async def get_transaction() -> AsyncGenerator[AsyncConnection[DictRow], None]:
     async with pool.connection() as conn:
         async with conn.transaction():
             yield conn
+@asynccontextmanager
 async def get_test_transaction() -> AsyncGenerator[AsyncConnection[DictRow], None]:
     async with test_pool.connection() as conn:
         async with conn.transaction():
             yield conn
-
-async def get_test_connection():
+@asynccontextmanager
+async def get_test_connection_auto_rollback():
     async with test_pool.connection() as conn:
         async with conn.transaction() as tx:
             yield conn
             raise psycopg.Rollback(tx)
+@asynccontextmanager
+async def get_test_connection():
+    async with test_pool.connection() as conn:
+        yield conn

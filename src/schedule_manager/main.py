@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from schedule_manager.people.router import router as people_router
-from schedule_manager.db.connection import open_pool, close_pool
+from schedule_manager.db.connection import open_pool, close_pool, pool
 from contextlib import asynccontextmanager
 from schedule_manager.auth.router import router as auth_router
 from schedule_manager.core.exceptions import global_exception_handler
@@ -12,11 +12,11 @@ from schedule_manager.workstations.workstation.router import router as workstati
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await open_pool()
+    await open_pool(pool)
 
     yield
 
-    await close_pool()
+    await close_pool(pool)
 
 app = FastAPI(lifespan=lifespan)
 

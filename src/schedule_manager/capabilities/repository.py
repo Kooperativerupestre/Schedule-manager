@@ -15,7 +15,7 @@ from schedule_manager.capabilities.models import (
     capability_row_to_assignment
 )
 from schedule_manager.people.errors import PersonNotFoundError
-from schedule_manager.core.errors import UnexpectedStateError
+from schedule_manager.core.errors import OverlappingSchedulesError, UnexpectedStateError
 from schedule_manager.core.ranges.constants import DB_BEGIN, NEVER_END
 from schedule_manager.utils.service_logging import log_repository_error
 
@@ -126,7 +126,7 @@ class CapabilitiesRepository:
 
             except psycopg_errors.ExclusionViolation as error:
                 log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
-                raise schedule_errors.DuplicateCapabilityError
+                raise OverlappingSchedulesError
 
             except psycopg_errors.NotNullViolation as error:
                 log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})

@@ -9,8 +9,14 @@ from schedule_manager.core.errors import UnexpectedStateError
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from schedule_manager.db.connection import open_pool, close_pool, get_transaction
-from schedule_manager.db.connection import open_test_pool, close_test_pool, get_test_transaction
+from schedule_manager.db.connection import (
+    close_pool,
+    get_test_transaction,
+    get_transaction,
+    open_pool,
+    pool,
+    test_pool,
+)
 # Get migrations directory relative to the project root
 project_root = Path(__file__).parent.parent
 migrations_dir = project_root / "migrations"
@@ -70,17 +76,17 @@ async def run(conn: psycopg.AsyncConnection[DictRow], files:list[Path]) -> None:
                 raise
 
 async def main() -> None:
-    # run migrations on mainly database
-    await open_pool()
-    async for conn in get_transaction():
+    # Run migrations on the main database
+    await open_pool(pool)
+    async with get_transaction() as conn:
         await run(conn, files)
-    await close_pool()
+    await close_pool(pool)
 
-    # run migrations on test database
-    await open_test_pool()
-    async for conn in get_test_transaction():
+    # Run migrations on the test database
+    await open_pool(test_pool)
+    async with get_test_transaction() as conn:
         await run(conn, files)
-    await close_test_pool()
+    await close_pool(test_pool)
 
 if __name__ == "__main__":
     asyncio.run(main())
