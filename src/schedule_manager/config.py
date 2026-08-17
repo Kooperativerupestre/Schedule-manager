@@ -4,6 +4,7 @@ from urllib.parse import urlparse, urlunparse
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
+
 class Settings(BaseSettings):
     database_url: str
     test_database_url: str
@@ -22,4 +23,4 @@ class Settings(BaseSettings):
         return urlunparse(admin_parsed)
 
 
-settings = Settings() # type: ignore
+settings = Settings()  # type: ignore

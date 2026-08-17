@@ -5,8 +5,17 @@ from schedule_manager.core.ranges.models import DB_Range
 from schedule_manager.core.ranges.constants import STANDARD_YEAR
 from datetime import UTC, datetime
 
+
 class HolidayDatetime:
-    def __init__(self, month:int, day:int, minute:int, hour:int, second:int, microssecond:int):
+    def __init__(
+        self,
+        month: int,
+        day: int,
+        minute: int,
+        hour: int,
+        second: int,
+        microssecond: int,
+    ):
         self.value = datetime(
             year=STANDARD_YEAR,
             month=month,
@@ -15,19 +24,23 @@ class HolidayDatetime:
             hour=hour,
             second=second,
             microsecond=microssecond,
-            tzinfo=UTC
+            tzinfo=UTC,
         )
+
+
 @dataclass(frozen=True)
 class HolidayRange:
-    begin_at:HolidayDatetime
-    end_at:HolidayDatetime
+    begin_at: HolidayDatetime
+    end_at: HolidayDatetime
 
-def holiday_range_to_db(holiday_range:HolidayRange) -> DB_Range:
+
+def holiday_range_to_db(holiday_range: HolidayRange) -> DB_Range:
     return DB_Range(
-        lower=holiday_range.begin_at.value,
-        upper=holiday_range.end_at.value
+        lower=holiday_range.begin_at.value, upper=holiday_range.end_at.value
     )
-def db_range_to_holiday_range(db_range:DB_Range) -> HolidayRange:
+
+
+def db_range_to_holiday_range(db_range: DB_Range) -> HolidayRange:
     assert db_range.lower is not None
     assert db_range.upper is not None
     begin = db_range.lower
@@ -39,7 +52,7 @@ def db_range_to_holiday_range(db_range:DB_Range) -> HolidayRange:
             minute=begin.minute,
             hour=begin.hour,
             second=begin.second,
-            microssecond=begin.microsecond
+            microssecond=begin.microsecond,
         ),
         end_at=HolidayDatetime(
             month=end.month,
@@ -47,10 +60,11 @@ def db_range_to_holiday_range(db_range:DB_Range) -> HolidayRange:
             minute=end.minute,
             hour=end.hour,
             second=end.second,
-            microssecond=end.microsecond
-        )
+            microssecond=end.microsecond,
+        ),
     )
-    
+
+
 @dataclass(frozen=True)
 class Holiday:
     name: str

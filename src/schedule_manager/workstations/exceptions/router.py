@@ -35,14 +35,12 @@ async def update(
     await WorkstationExceptionService.update(person_id, workstation_id, request, conn)
 
 
-
 @router.delete("/{workstation_id}")
 async def delete(
     workstation_id: UUID,
     person_id: UUID = Depends(get_current_person_id),
     conn: AsyncConnection[DictRow] = Depends(get_transaction),
 ):
-    
     await WorkstationExceptionService.delete(person_id, workstation_id, conn)
 
 

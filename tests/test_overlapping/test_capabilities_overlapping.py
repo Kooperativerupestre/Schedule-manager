@@ -1,11 +1,11 @@
 import asyncio
 
-import pytest
 from schedule_manager.core.errors import OverlappingSchedulesError
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 from schedule_manager.capabilities.models import CapabilityInput
 from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.core.ranges.constants import NEVER_END
+
 
 async def test_same_capability_interval_only_allows_one_insert(
     setup_conn,
@@ -31,9 +31,8 @@ async def test_same_capability_interval_only_allows_one_insert(
                 member.id,
                 business_id,
                 CapabilityInput(Resource.BUSINESS_HOLIDAYS, Action.MANAGE, NEVER_END),
-                connection
+                connection,
             )
-        
 
     results = await asyncio.gather(
         *(insert_capability(connection) for connection in connections),

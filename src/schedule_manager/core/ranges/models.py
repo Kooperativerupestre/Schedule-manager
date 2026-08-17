@@ -2,20 +2,23 @@ from datetime import datetime, UTC
 from psycopg.types.range import Range as DB_Range
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from schedule_manager.core.ranges.constants import _DB_Begin, _NeverEnd, NEVER_END, DB_BEGIN
+from schedule_manager.core.ranges.constants import (
+    _DB_Begin,
+    _NeverEnd,
+    NEVER_END,
+    DB_BEGIN,
+)
 
 
 @dataclass(frozen=True)
 class BaseRange(ABC):
     @property
     @abstractmethod
-    def to_db_range(self) -> DB_Range:
-        ...
+    def to_db_range(self) -> DB_Range: ...
 
     @property
     @abstractmethod
-    def is_valid_now(self) -> bool:
-        ...
+    def is_valid_now(self) -> bool: ...
 
 
 @dataclass(frozen=True)
@@ -29,7 +32,7 @@ class StrictRange(BaseRange):
 
     @property
     def to_db_range(self) -> DB_Range:
-        return DB_Range(self.begin_date, self.end_date, '[)')
+        return DB_Range(self.begin_date, self.end_date, "[)")
 
     @property
     def is_valid_now(self) -> bool:
@@ -56,7 +59,7 @@ class NormalRange(BaseRange):
 
     @property
     def to_db_range(self) -> DB_Range:
-        return DB_Range(self.begin_date, self.end_date, '[)')
+        return DB_Range(self.begin_date, self.end_date, "[)")
 
     @property
     def is_valid_now(self) -> bool:
@@ -70,20 +73,23 @@ class NormalRange(BaseRange):
 
         return True
 
+
 def create_normal_range(
-    begin_date: datetime | _DB_Begin,
-    end_date: datetime | _NeverEnd
+    begin_date: datetime | _DB_Begin, end_date: datetime | _NeverEnd
 ) -> NormalRange:
     return NormalRange(begin_date, end_date)
 
+
 def create_db_range(
-    begin_date:datetime | _DB_Begin,
-    end_date: datetime | _NeverEnd
+    begin_date: datetime | _DB_Begin, end_date: datetime | _NeverEnd
 ) -> DB_Range:
-    
-    if begin_date is not DB_BEGIN and begin_date.tzinfo is None or (end_date is not NEVER_END and end_date.tzinfo is None):
+    if (
+        begin_date is not DB_BEGIN
+        and begin_date.tzinfo is None
+        or (end_date is not NEVER_END and end_date.tzinfo is None)
+    ):
         raise ValueError("datetime must have timezone")
 
     new_begin_date = None if begin_date is DB_BEGIN else begin_date
     new_end_date = None if end_date is NEVER_END else end_date
-    return DB_Range(new_begin_date, new_end_date, '[)')
+    return DB_Range(new_begin_date, new_end_date, "[)")

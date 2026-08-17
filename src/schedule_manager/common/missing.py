@@ -1,8 +1,8 @@
-
 from typing import Any
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 from typing import TypeVar, NoReturn
+
 
 class _Missing:
     _instance = None
@@ -21,18 +21,22 @@ class _Missing:
     ) -> core_schema.CoreSchema:
         return core_schema.is_instance_schema(cls)
 
+
 MISSING = _Missing()
 
 
 class MissingValueError(Exception):
     pass
 
+
 T = TypeVar("T")
+
 
 def raise_missing() -> NoReturn:
     raise MissingValueError
 
-def resolve_optional(value:T | None | _Missing) -> T | None:
+
+def resolve_optional(value: T | None | _Missing) -> T | None:
     if value is MISSING:
         raise_missing()
     return value

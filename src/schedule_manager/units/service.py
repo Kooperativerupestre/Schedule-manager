@@ -18,69 +18,131 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @namespace
 class RequestTranslator:
     @staticmethod
-    def add_request_to_unit(request:UnitAddRequest) -> Unit:
+    def add_request_to_unit(request: UnitAddRequest) -> Unit:
         return Unit(
             name=request.name,
             business_id=request.business_id,
             description=request.description,
             phone_number=request.phone_number,
         )
+
     @staticmethod
-    def update_request_to_changes(request:UnitUpdateRequest) -> UnitChanges:
+    def update_request_to_changes(request: UnitUpdateRequest) -> UnitChanges:
         return UnitChanges(
             name=request.name,
             description=request.description,
             phone_number=request.phone_number,
-            business_id=MISSING
+            business_id=MISSING,
         )
+
 
 @log_service_errors
 @namespace
 class UnitService:
     @staticmethod
-    async def add(person_id:UUID, unit:UnitAddRequest, conn:AsyncConnection[DictRow]) -> UUID:
-        await BusinessValidator.validate_unit_lifecycle(person_id, unit.business_id, conn)
+    async def add(
+        person_id: UUID, unit: UnitAddRequest, conn: AsyncConnection[DictRow]
+    ) -> UUID:
+        await BusinessValidator.validate_unit_lifecycle(
+            person_id, unit.business_id, conn
+        )
 
         response = await UnitRepository.add(
-            RequestTranslator.add_request_to_unit(unit),
-            conn
+            RequestTranslator.add_request_to_unit(unit), conn
         )
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.MANAGE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT, Action.READ, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.WORKSTATION_LIFECYCLE, Action.MANAGE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.MANAGE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, response.id, CapabilityInput(Resource.UNIT_HOLIDAYS, Action.READ, NEVER_END), conn)
-        logger.info("unit.created", extra={"actor_id": str(person_id), "unit_id": str(response.id), "business_id": str(unit.business_id), "request": model_context(unit)})
+        await CapabilitiesRepository.add(
+            person_id,
+            response.id,
+            CapabilityInput(Resource.UNIT, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            response.id,
+            CapabilityInput(Resource.UNIT, Action.READ, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            response.id,
+            CapabilityInput(Resource.WORKSTATION_LIFECYCLE, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            response.id,
+            CapabilityInput(Resource.UNIT_HOLIDAYS, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            response.id,
+            CapabilityInput(Resource.UNIT_HOLIDAYS, Action.READ, NEVER_END),
+            conn,
+        )
+        logger.info(
+            "unit.created",
+            extra={
+                "actor_id": str(person_id),
+                "unit_id": str(response.id),
+                "business_id": str(unit.business_id),
+                "request": model_context(unit),
+            },
+        )
         return response.id
+
     @staticmethod
-    async def delete(person_id:UUID, business_id:UUID, unit_id:UUID, conn:AsyncConnection[DictRow]) -> None:
+    async def delete(
+        person_id: UUID,
+        business_id: UUID,
+        unit_id: UUID,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
         await BusinessValidator.validate_unit_lifecycle(person_id, business_id, conn)
 
-        r =  await UnitRepository.delete(
-            unit_id,
-            conn
-        )
+        r = await UnitRepository.delete(unit_id, conn)
         if not r:
             raise UnitNotFoundError
-        logger.info("unit.deleted", extra={"actor_id": str(person_id), "unit_id": str(unit_id), "business_id": str(business_id)})
+        logger.info(
+            "unit.deleted",
+            extra={
+                "actor_id": str(person_id),
+                "unit_id": str(unit_id),
+                "business_id": str(business_id),
+            },
+        )
 
     @staticmethod
-    async def update(person_id:UUID, unit_id:UUID, request:UnitUpdateRequest, conn:AsyncConnection[DictRow]) -> None:
+    async def update(
+        person_id: UUID,
+        unit_id: UUID,
+        request: UnitUpdateRequest,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
         await UnitValidator.validate_manage_capability(person_id, unit_id, conn)
 
-        r =  await UnitRepository.update(
-            unit_id,
-            RequestTranslator.update_request_to_changes(request),
-            conn
+        r = await UnitRepository.update(
+            unit_id, RequestTranslator.update_request_to_changes(request), conn
         )
         if not r:
             raise UnitNotFoundError
-        logger.info("unit.updated", extra={"actor_id": str(person_id), "unit_id": str(unit_id), "request": model_context(request)})
+        logger.info(
+            "unit.updated",
+            extra={
+                "actor_id": str(person_id),
+                "unit_id": str(unit_id),
+                "request": model_context(request),
+            },
+        )
+
     @staticmethod
-    async def get(person_id:UUID, unit_id:UUID, conn:AsyncConnection[DictRow]) -> UnitGetOutput | None:
+    async def get(
+        person_id: UUID, unit_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> UnitGetOutput | None:
         await UnitValidator.validate_read_capability(person_id, unit_id, conn)
 
         return await UnitRepository.get(unit_id, conn)

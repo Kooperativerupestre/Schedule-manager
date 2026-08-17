@@ -51,6 +51,7 @@ from schedule_manager.workstations.schedules.errors import (
 from schedule_manager.workstations.exceptions.errors import (
     WorkstationExceptionNotFoundError,
 )
+
 GLOBAL_ERROR_MAPPING = {
     ForbiddenError: (403, "Forbidden"),
     DuplicateCapabilityError: (409, "Capability already exists"),
@@ -58,7 +59,6 @@ GLOBAL_ERROR_MAPPING = {
     TargetNotFoundError: (404, "Target id was not found"),
     PersonNotFoundError: (404, "Person id was not found"),
     CapabilityNameError: (404, "Capability name was not found"),
-
     CapabilityNotFoundError: (404, "Capability was not found"),
     InvalidCapabilitiesCombinationError: (400, "Invalid capability combination"),
     InvalidCredentialsError: (401, "Invalid credentials"),
@@ -84,14 +84,13 @@ GLOBAL_ERROR_MAPPING = {
     WorkstationExceptionNotFoundError: (404, "Workstation exception not found"),
     ScheduleNotFoundError: (404, "Schedule not found"),
 }
+
+
 async def global_exception_handler(request: Request, exc: Exception):
     exc_type = type(exc)
-    
+
     if exc_type in GLOBAL_ERROR_MAPPING:
         status_code, detail = GLOBAL_ERROR_MAPPING[exc_type]
-        return JSONResponse(
-            status_code=status_code,
-            content={"detail": detail}
-        )
-    
+        return JSONResponse(status_code=status_code, content={"detail": detail})
+
     raise exc

@@ -1,4 +1,10 @@
-from schedule_manager.capabilities.capabilities import Capability, Scope, COLUMN_BY_SCOPE, Resource, Action
+from schedule_manager.capabilities.capabilities import (
+    Capability,
+    Scope,
+    COLUMN_BY_SCOPE,
+    Resource,
+    Action,
+)
 from uuid import UUID
 from psycopg import AsyncConnection
 from psycopg import errors as psycopg_errors
@@ -12,7 +18,7 @@ from schedule_manager.capabilities.models import (
     CapabilityAssignment,
     CapabilityInput,
     CapabilityRow,
-    capability_row_to_assignment
+    capability_row_to_assignment,
 )
 from schedule_manager.people.errors import PersonNotFoundError
 from schedule_manager.core.errors import OverlappingSchedulesError, UnexpectedStateError
@@ -32,25 +38,16 @@ class Constraints(Enum):
     PERSON_CAPABILITIES_CAPABILITY_ID_FKEY = auto()
 
 
-
-
 @namespace
 class CapabilitiesRepository:
-
     @staticmethod
     async def has(
         person_id: UUID,
         target_id: UUID,
         capability: Capability,
-
-        conn: AsyncConnection[DictRow]
+        conn: AsyncConnection[DictRow],
     ) -> bool:
-
-        values = (
-            person_id,
-            capability.name,
-            target_id
-        )
+        values = (person_id, capability.name, target_id)
 
         column_name = capability.column_name
 
@@ -73,28 +70,18 @@ class CapabilitiesRepository:
 
         return r["exists"] if r else False
 
-
     @staticmethod
     async def add(
         person_id: UUID,
         target_id: UUID,
         capability: CapabilityInput,
-        conn: AsyncConnection[DictRow]
+        conn: AsyncConnection[DictRow],
     ) -> UUID:
-
         begin_at = DB_BEGIN
 
-        validity_range = create_db_range(
-            begin_at,
-            capability.end_at
-        )
+        validity_range = create_db_range(begin_at, capability.end_at)
 
-        values = (
-            person_id,
-            capability.name,
-            target_id,
-            validity_range
-        )
+        values = (person_id, capability.name, target_id, validity_range)
 
         column_name = capability.column_name
 
@@ -118,29 +105,55 @@ class CapabilitiesRepository:
             RETURNING id;
         """).format(sql.Identifier(column_name))
 
-
         async with conn.cursor() as cur:
             try:
                 await cur.execute(query, values)
                 r = await cur.fetchone()
 
             except psycopg_errors.ExclusionViolation as error:
-                log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
+                log_repository_error(
+                    CapabilitiesRepository,
+                    "add",
+                    error,
+                    {
+                        "person_id": str(person_id),
+                        "target_id": str(target_id),
+                        "capability": capability.name,
+                    },
+                )
                 raise OverlappingSchedulesError
 
             except psycopg_errors.NotNullViolation as error:
-                log_repository_error(CapabilitiesRepository, "add", error, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
+                log_repository_error(
+                    CapabilitiesRepository,
+                    "add",
+                    error,
+                    {
+                        "person_id": str(person_id),
+                        "target_id": str(target_id),
+                        "capability": capability.name,
+                    },
+                )
                 raise schedule_errors.NullCapabilityError
 
             except psycopg_errors.ForeignKeyViolation as e:
-                log_repository_error(CapabilitiesRepository, "add", e, {"person_id": str(person_id), "target_id": str(target_id), "capability": capability.name})
+                log_repository_error(
+                    CapabilitiesRepository,
+                    "add",
+                    e,
+                    {
+                        "person_id": str(person_id),
+                        "target_id": str(target_id),
+                        "capability": capability.name,
+                    },
+                )
 
                 c_name = e.diag.constraint_name
 
                 if c_name in [
                     Constraints.PERSON_CAPABILITIES_BUSINESS_ID_FKEY.value,
                     Constraints.PERSON_CAPABILITIES_UNIT_ID_FKEY.value,
-                    Constraints.PERSON_CAPABILITIES_WORKSTATION_ID_FKEY.value
+                    Constraints.PERSON_CAPABILITIES_WORKSTATION_ID_FKEY.value,
                 ]:
                     raise schedule_errors.TargetNotFoundError
 
@@ -159,16 +172,11 @@ class CapabilitiesRepository:
     @staticmethod
     async def end_all(
         person_id: UUID,
-        target_id:UUID,
+        target_id: UUID,
         capability: Capability,
-        conn: AsyncConnection[DictRow]
+        conn: AsyncConnection[DictRow],
     ) -> bool:
-
-        values = (
-            person_id,
-            capability.name,
-            target_id
-        )
+        values = (person_id, capability.name, target_id)
 
         column_name = capability.column_name
 
@@ -189,11 +197,9 @@ class CapabilitiesRepository:
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             return cur.rowcount > 0
+
     @staticmethod
-    async def end(
-        id:UUID,
-        conn:AsyncConnection[DictRow]
-    ) -> bool:
+    async def end(id: UUID, conn: AsyncConnection[DictRow]) -> bool:
         query = """
 UPDATE person_capabilities SET validity_range = tstzrange(lower(validity_range), now(), '[)')
 WHERE id = %s;
@@ -202,16 +208,14 @@ WHERE id = %s;
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             return cur.rowcount > 0
-    
 
     @staticmethod
     async def get_all_from_person(
         person_id: UUID,
         target_id: UUID,
         capability: Capability,
-        conn: AsyncConnection[DictRow]
+        conn: AsyncConnection[DictRow],
     ) -> list[CapabilityAssignment]:
-
         column_name = capability.column_name
 
         query = sql.SQL("""
@@ -229,38 +233,24 @@ WHERE id = %s;
               AND {} = %s;
         """).format(sql.Identifier(column_name))
 
-        values = (
-            person_id,
-            capability.name,
-            target_id
-        )
+        values = (person_id, capability.name, target_id)
 
-        async with conn.cursor(
-            row_factory=class_row(CapabilityRow)
-        ) as cur:
-
+        async with conn.cursor(row_factory=class_row(CapabilityRow)) as cur:
             await cur.execute(query, values)
             rows = await cur.fetchall()
 
-        return [
-            capability_row_to_assignment(row)
-            for row in rows
-        ]
-
+        return [capability_row_to_assignment(row) for row in rows]
 
     @staticmethod
     async def get_last(
         person_id: UUID,
-        target_id: UUID, 
+        target_id: UUID,
         capability: Capability,
         conn: AsyncConnection[DictRow],
-        k: int = 1
+        k: int = 1,
     ) -> list[CapabilityAssignment]:
-
         if k <= 0:
-            raise ValueError(
-                f"k {k} must be > 0"
-            )
+            raise ValueError(f"k {k} must be > 0")
 
         column_name = capability.column_name
 
@@ -281,33 +271,16 @@ WHERE id = %s;
             LIMIT %s;
         """).format(sql.Identifier(column_name))
 
+        values = (person_id, capability.name, target_id, k)
 
-        values = (
-            person_id,
-            capability.name,
-            target_id,
-            k
-        )
-
-        async with conn.cursor(
-            row_factory=class_row(CapabilityRow)
-        ) as cur:
-
+        async with conn.cursor(row_factory=class_row(CapabilityRow)) as cur:
             await cur.execute(query, values)
             rows = await cur.fetchall()
 
-        return [
-            capability_row_to_assignment(row)
-            for row in rows
-        ]
-
+        return [capability_row_to_assignment(row) for row in rows]
 
     @staticmethod
-    async def make_admin(
-        person_id: UUID,
-        conn: AsyncConnection[DictRow]
-    ) -> None:
-
+    async def make_admin(person_id: UUID, conn: AsyncConnection[DictRow]) -> None:
         query = """
             INSERT INTO admins (person_id)
             VALUES (%s);
@@ -315,23 +288,36 @@ WHERE id = %s;
 
         async with conn.cursor() as cur:
             await cur.execute(query, (person_id,))
+
     @staticmethod
-    async def end_all_from_target(person_id:UUID, target_id:UUID, scope:Scope, conn:AsyncConnection[DictRow]) -> bool:
+    async def end_all_from_target(
+        person_id: UUID, target_id: UUID, scope: Scope, conn: AsyncConnection[DictRow]
+    ) -> bool:
         query = sql.SQL("""
             DELETE FROM person_capabilities
             WHERE person_id = %s
               AND {} = %s
         """).format(COLUMN_BY_SCOPE[scope])
 
-        values = (
-            person_id,
-            target_id
-        )
+        values = (person_id, target_id)
 
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             return cur.rowcount > 0
+
     @staticmethod
-    async def add_capability_resource(person_id:UUID, target_person_id:UUID, conn:AsyncConnection[DictRow]) -> None:
-        await CapabilitiesRepository.add(target_person_id, person_id, CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END), conn)
-        await CapabilitiesRepository.add(target_person_id, person_id, CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END), conn)
+    async def add_capability_resource(
+        person_id: UUID, target_person_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> None:
+        await CapabilitiesRepository.add(
+            target_person_id,
+            person_id,
+            CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            target_person_id,
+            person_id,
+            CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END),
+            conn,
+        )

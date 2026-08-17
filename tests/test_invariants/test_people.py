@@ -6,24 +6,18 @@ from schedule_manager.people.service import PeopleService
 from schedule_manager.people.schemas import LocalPersonCreateRequest
 from schedule_manager.core.errors import PhoneNumberAlreadyExistsError
 
-async def test_duplicate_phone_number_error(
-        conn:AsyncConnection[DictRow]
-) -> None:
+
+async def test_duplicate_phone_number_error(conn: AsyncConnection[DictRow]) -> None:
     await PeopleService.create_local(
         conn,
         LocalPersonCreateRequest(
-            name='123',
-            phone_number=GLOBAL_VALID_NUMBER,
-            password='234'
-        )
+            name="123", phone_number=GLOBAL_VALID_NUMBER, password="234"
+        ),
     )
     with pytest.raises(PhoneNumberAlreadyExistsError):
         await PeopleService.create_local(
             conn,
             LocalPersonCreateRequest(
-                name='3123',
-                phone_number=GLOBAL_VALID_NUMBER,
-                password='234'
-            )
+                name="3123", phone_number=GLOBAL_VALID_NUMBER, password="234"
+            ),
         )
-    

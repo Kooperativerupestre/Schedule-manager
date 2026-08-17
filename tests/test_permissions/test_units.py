@@ -17,9 +17,9 @@ async def test_add_unit_without_business_permission_raises_forbidden(
         await UnitService.add(
             single_person.id,
             UnitAddRequest(
-                name='Unit',
+                name="Unit",
                 business_id=business,
-                description='test',
+                description="test",
                 phone_number=GLOBAL_VALID_NUMBER,
             ),
             conn,
@@ -32,18 +32,18 @@ async def test_update_unit_without_permission_raises_forbidden(
     create_business_with_owner,
     create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
-    stranger = await person_factory('stranger', '2000000000')
+    stranger = await person_factory("stranger", "2000000000")
 
     with pytest.raises(ForbiddenError):
         await UnitService.update(
             stranger.id,
             unit_id,
             UnitUpdateRequest(
-                name='Updated Unit',
-                description='updated',
+                name="Updated Unit",
+                description="updated",
                 phone_number=GLOBAL_VALID_NUMBER,
             ),
             conn,
@@ -56,10 +56,10 @@ async def test_read_unit_without_permission_raises_forbidden(
     create_business_with_owner,
     create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
-    stranger = await person_factory('stranger', '2000000000')
+    stranger = await person_factory("stranger", "2000000000")
 
     with pytest.raises(ForbiddenError):
         await UnitService.get(stranger.id, unit_id, conn)
@@ -71,10 +71,10 @@ async def test_delete_unit_without_permission_raises_forbidden(
     create_business_with_owner,
     create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
-    stranger = await person_factory('stranger', '2000000000')
+    stranger = await person_factory("stranger", "2000000000")
 
     with pytest.raises(ForbiddenError):
         await UnitService.delete(stranger.id, business_id, unit_id, conn)
@@ -89,9 +89,9 @@ async def test_add_unit_with_permission(
     unit_id = await UnitService.add(
         owner.id,
         UnitAddRequest(
-            name='Unit',
+            name="Unit",
             business_id=business_id,
-            description='test',
+            description="test",
             phone_number=GLOBAL_VALID_NUMBER,
         ),
         conn,
@@ -106,7 +106,7 @@ async def test_manage_unit_with_permission(
     create_business_with_owner,
     create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
 
@@ -114,8 +114,8 @@ async def test_manage_unit_with_permission(
         owner.id,
         unit_id,
         UnitUpdateRequest(
-            name='Updated Unit',
-            description='updated',
+            name="Updated Unit",
+            description="updated",
             phone_number=GLOBAL_VALID_NUMBER,
         ),
         conn,
@@ -128,22 +128,20 @@ async def test_read_unit_with_permission(
     create_business_with_owner,
     create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
 
     await UnitService.get(owner.id, unit_id, conn)
 
 
-
-
 async def test_delete_unit_with_permission(
     conn: AsyncConnection[DictRow],
     person_factory,
     create_business_with_owner,
-    create_unit_with_owner
+    create_unit_with_owner,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await create_business_with_owner(owner.id)
     unit_id = await create_unit_with_owner(owner.id, business_id)
 

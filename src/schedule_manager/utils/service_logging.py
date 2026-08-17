@@ -32,7 +32,9 @@ def model_context(model: Any) -> dict[str, Any]:
     }
 
 
-def log_repository_error(repository: type[Any], operation: str, error: Exception, context: dict[str, Any]) -> None:
+def log_repository_error(
+    repository: type[Any], operation: str, error: Exception, context: dict[str, Any]
+) -> None:
     """Log a repository failure using the same structured contract as services."""
     logger = logging.getLogger(repository.__module__)
     logger.exception(
@@ -47,7 +49,9 @@ def log_repository_error(repository: type[Any], operation: str, error: Exception
     )
 
 
-def operation_context(func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any]:
+def operation_context(
+    func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> dict[str, Any]:
     bound = inspect.signature(func).bind_partial(*args, **kwargs)
     return {
         key: _log_value(value)

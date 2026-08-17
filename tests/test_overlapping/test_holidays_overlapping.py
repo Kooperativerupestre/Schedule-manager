@@ -1,12 +1,12 @@
 import asyncio
-from datetime import UTC
-from time import timezone
 
 import pytest
 
 from schedule_manager.business.holidays.repository import HolidayConfigBusinessHolidays
 from schedule_manager.units.holidays.repository import HolidayConfigUnitHolidays
-from schedule_manager.workstations.holidays.repository import HolidayConfigWorkstationHolidays
+from schedule_manager.workstations.holidays.repository import (
+    HolidayConfigWorkstationHolidays,
+)
 from schedule_manager.core.errors import OverlappingSchedulesError
 from schedule_manager.holidays.models import Holiday, HolidayDatetime, HolidayRange
 from schedule_manager.holidays.repository import HolidayRepository
@@ -47,20 +47,10 @@ async def test_same_holiday_interval_only_allows_one_insert(
         description="stress test",
         range=HolidayRange(
             begin_at=HolidayDatetime(
-                month=1,
-                day=1,
-                hour=10,
-                minute=0,
-                second=0,
-                microssecond=0
+                month=1, day=1, hour=10, minute=0, second=0, microssecond=0
             ),
             end_at=HolidayDatetime(
-                month=1,
-                day=1,
-                hour=11,
-                minute=0,
-                second=0,
-                microssecond=0
+                month=1, day=1, hour=11, minute=0, second=0, microssecond=0
             ),
         ),
     )

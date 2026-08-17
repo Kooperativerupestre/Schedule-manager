@@ -8,7 +8,10 @@ from schedule_manager.business.memberships.service import MembershipService
 from schedule_manager.capabilities.capabilities import Action, Resource
 from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.capabilities.service import CapabilitiesService
-from schedule_manager.capabilities.schemas import CapabilityGetRequest, CapabilityAddRequest
+from schedule_manager.capabilities.schemas import (
+    CapabilityGetRequest,
+    CapabilityAddRequest,
+)
 from tests.helpers import GLOBAL_VALID_NUMBER
 from schedule_manager.core.ranges.constants import NEVER_END
 
@@ -32,8 +35,8 @@ async def test_update_business_without_permission_raises_forbidden(
             single_person.id,
             business,
             BusinessUpdateRequest(
-                name='Updated Business',
-                description='Updated description',
+                name="Updated Business",
+                description="Updated description",
                 phone_number=GLOBAL_VALID_NUMBER,
             ),
             conn,
@@ -53,17 +56,19 @@ async def test_add_member_permission_requires_members_manage(
     conn: AsyncConnection[DictRow],
     person_factory,
 ) -> None:
-    owner = await person_factory('owner', '1000000000')
+    owner = await person_factory("owner", "1000000000")
     business_id = await BusinessService.add(
         owner.id,
-        BusinessAddRequest(name='Business', description='test', phone_number=GLOBAL_VALID_NUMBER),
+        BusinessAddRequest(
+            name="Business", description="test", phone_number=GLOBAL_VALID_NUMBER
+        ),
         conn,
     )
-    member = await person_factory('member', '2000000000')
+    member = await person_factory("member", "2000000000")
 
     await MembershipService.add(owner.id, member.id, business_id, conn)
 
-    viewer = await person_factory('viewer', '3000000000')
+    viewer = await person_factory("viewer", "3000000000")
     with pytest.raises(ForbiddenError):
         await CapabilitiesService.add(
             viewer.id,
@@ -100,8 +105,8 @@ async def test_update_business_with_permission(
         single_person.id,
         business_id,
         BusinessUpdateRequest(
-            name='Updated Business',
-            description='Updated description',
+            name="Updated Business",
+            description="Updated description",
             phone_number=GLOBAL_VALID_NUMBER,
         ),
         conn,
@@ -118,7 +123,6 @@ async def test_read_business_with_permission(
     business = await BusinessService.get(single_person.id, business_id, conn)
 
     assert business is not None
-    
 
 
 async def test_add_business_grants_member_permissions(
@@ -127,7 +131,9 @@ async def test_add_business_grants_member_permissions(
 ) -> None:
     business_id = await BusinessService.add(
         single_person.id,
-        BusinessAddRequest(name='Business', description='test', phone_number=GLOBAL_VALID_NUMBER),
+        BusinessAddRequest(
+            name="Business", description="test", phone_number=GLOBAL_VALID_NUMBER
+        ),
         conn,
     )
 

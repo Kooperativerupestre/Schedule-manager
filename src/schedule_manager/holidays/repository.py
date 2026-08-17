@@ -8,7 +8,14 @@ from schedule_manager.common.update_result import UpdateOutputs
 from schedule_manager.core.errors import NullDataError, OverlappingSchedulesError
 from psycopg import sql
 from schedule_manager.utils.namespace import namespace
-from schedule_manager.holidays.models import Holiday, HolidayChanges, HolidayRange, HolidayRow, db_range_to_holiday_range, holiday_range_to_db
+from schedule_manager.holidays.models import (
+    Holiday,
+    HolidayChanges,
+    HolidayRange,
+    HolidayRow,
+    db_range_to_holiday_range,
+    holiday_range_to_db,
+)
 from schedule_manager.core.errors import UnexpectedStateError
 from schedule_manager.utils.service_logging import log_repository_error
 
@@ -19,6 +26,7 @@ class HolidayRepositoryContext:
     owner_column: sql.Identifier
 
     foreign_key_error: type[Exception]
+
 
 @namespace
 class HolidayRepository:
@@ -44,7 +52,6 @@ RETURNING id;
             holiday.name,
             holiday.description,
             holiday_range_to_db(holiday.range),
-
         )
 
         try:
@@ -58,16 +65,32 @@ RETURNING id;
             return row["id"]
 
         except psycopg_errors.ForeignKeyViolation as error:
-            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
+            log_repository_error(
+                HolidayRepository,
+                "add",
+                error,
+                {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)},
+            )
             raise config.foreign_key_error()
 
         except psycopg_errors.ExclusionViolation as error:
-            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
+            log_repository_error(
+                HolidayRepository,
+                "add",
+                error,
+                {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)},
+            )
             raise OverlappingSchedulesError
 
         except psycopg_errors.NotNullViolation as error:
-            log_repository_error(HolidayRepository, "add", error, {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)})
+            log_repository_error(
+                HolidayRepository,
+                "add",
+                error,
+                {"owner_id": str(owner_id), "table": config.table_name.as_string(conn)},
+            )
             raise NullDataError
+
     @staticmethod
     async def delete(
         config: HolidayRepositoryContext,
@@ -83,6 +106,7 @@ RETURNING id;
         async with conn.cursor() as cur:
             await cur.execute(query, (holiday_id,))
             return cur.rowcount != 0
+
     @staticmethod
     async def update(
         config: HolidayRepositoryContext,
@@ -90,7 +114,6 @@ RETURNING id;
         changes: HolidayChanges,
         conn: AsyncConnection[DictRow],
     ) -> UpdateOutputs:
-
         updates: list[sql.Composed] = []
         values: list[object] = []
 
@@ -101,11 +124,10 @@ RETURNING id;
         if changes.description is not MISSING:
             updates.append(sql.SQL("{} = %s").format(sql.Identifier("description")))
             values.append(changes.description)
-    
 
         if changes.range is not MISSING:
             updates.append(sql.SQL("{} = %s").format(sql.Identifier("holiday_range")))
-            values.append(changes.range.to_db_range) # type: ignore
+            values.append(changes.range.to_db_range)  # type: ignore
 
         if not updates:
             return UpdateOutputs.ZERO_CHANGES
@@ -131,15 +153,23 @@ WHERE id = %s;
             return UpdateOutputs.OK
 
         except psycopg_errors.ExclusionViolation as error:
-            log_repository_error(HolidayRepository, "update", error, {"holiday_id": str(holiday_id), "table": config.table_name.as_string(conn)})
+            log_repository_error(
+                HolidayRepository,
+                "update",
+                error,
+                {
+                    "holiday_id": str(holiday_id),
+                    "table": config.table_name.as_string(conn),
+                },
+            )
             raise OverlappingSchedulesError
+
     @staticmethod
     async def get(
         config: HolidayRepositoryContext,
         holiday_id: UUID,
         conn: AsyncConnection[DictRow],
     ) -> Holiday | None:
-
         query = sql.SQL("""
 SELECT
     {owner_column} AS owner_id,
@@ -165,6 +195,7 @@ WHERE id = %s;
             description=row.description,
             range=db_range_to_holiday_range(row.holiday_range),
         )
+
     @staticmethod
     async def has_overlapping_interval(
         config: HolidayRepositoryContext,

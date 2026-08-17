@@ -1,3 +1,2 @@
-
 class BusinessNotFoundError(Exception):
     pass

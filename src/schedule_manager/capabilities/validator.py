@@ -8,10 +8,17 @@ from psycopg.rows import DictRow
 import logging
 
 logger = logging.getLogger(__name__)
+
+
 @namespace
 class CapabilitiesValidator:
     @staticmethod
-    async def validate(person_id:UUID, target_id:UUID, capability:Capability, conn:AsyncConnection[DictRow]) -> None:
+    async def validate(
+        person_id: UUID,
+        target_id: UUID,
+        capability: Capability,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
         if not await CapabilitiesRepository.has(person_id, target_id, capability, conn):
             logger.warning(
                 "authorization.denied",
@@ -23,11 +30,23 @@ class CapabilitiesValidator:
                 },
             )
             raise ForbiddenError
+
     @staticmethod
-    async def validate_manage_capability(person_id:UUID, resource:Resource, target_id:UUID, conn:AsyncConnection[DictRow]) -> None:
+    async def validate_manage_capability(
+        person_id: UUID,
+        resource: Resource,
+        target_id: UUID,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
         capability = Capability(resource, Action.MANAGE)
         await CapabilitiesValidator.validate(person_id, target_id, capability, conn)
+
     @staticmethod
-    async def validate_read_capability(person_id:UUID, resource:Resource, target_id:UUID, conn:AsyncConnection[DictRow]) -> None:
+    async def validate_read_capability(
+        person_id: UUID,
+        resource: Resource,
+        target_id: UUID,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
         capability = Capability(resource, Action.READ)
         await CapabilitiesValidator.validate(person_id, target_id, capability, conn)

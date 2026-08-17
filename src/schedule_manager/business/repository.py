@@ -4,20 +4,25 @@ from psycopg import AsyncConnection
 from schedule_manager.common.update_result import UpdateOutputs
 from schedule_manager.common.missing import MISSING
 from psycopg.rows import class_row, DictRow
-from schedule_manager.business.models import Business, BusinessChanges, BusinessRow, BusinessOutput
+from schedule_manager.business.models import (
+    Business,
+    BusinessChanges,
+    BusinessRow,
+    BusinessOutput,
+)
 from schedule_manager.core.errors import UnexpectedStateError
 
 
 @namespace
 class BusinessRepository:
     @staticmethod
-    async def add(business:Business, conn:AsyncConnection[DictRow]) -> UUID:
+    async def add(business: Business, conn: AsyncConnection[DictRow]) -> UUID:
         query = """
 INSERT INTO businesses (name, description, phone_number) 
 VALUES (%s, %s, %s) RETURNING id;
-"""     
+"""
         values = (business.name, business.description, business.phone_number)
-        
+
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             row = await cur.fetchone()
@@ -26,7 +31,7 @@ VALUES (%s, %s, %s) RETURNING id;
         return row["id"]
 
     @staticmethod
-    async def delete(business_id:UUID, conn:AsyncConnection[DictRow]) -> bool:
+    async def delete(business_id: UUID, conn: AsyncConnection[DictRow]) -> bool:
         query = """
 DELETE FROM businesses WHERE id = %s;
 """
@@ -35,9 +40,12 @@ DELETE FROM businesses WHERE id = %s;
         async with conn.cursor() as cur:
             await cur.execute(query, values)
             row_count = cur.rowcount
-        return row_count > 0 
+        return row_count > 0
+
     @staticmethod
-    async def update(business_id:UUID, changes:BusinessChanges, conn:AsyncConnection[DictRow]) -> UpdateOutputs:
+    async def update(
+        business_id: UUID, changes: BusinessChanges, conn: AsyncConnection[DictRow]
+    ) -> UpdateOutputs:
         updates = []
         values = []
 
@@ -58,7 +66,7 @@ DELETE FROM businesses WHERE id = %s;
         SET {", ".join(updates)}
         WHERE id = %s;
         """
-        values.append(business_id)  
+        values.append(business_id)
 
         async with conn.cursor() as cur:
             await cur.execute(query, values)
@@ -66,8 +74,11 @@ DELETE FROM businesses WHERE id = %s;
         if row_count == 0:
             return UpdateOutputs.NOT_EXECUTED
         return UpdateOutputs.OK
+
     @staticmethod
-    async def get(business_id:UUID, conn:AsyncConnection[DictRow]) -> BusinessOutput | None:
+    async def get(
+        business_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> BusinessOutput | None:
         query = """
 SELECT name, description, phone_number, created_at FROM businesses WHERE id = %s;
 """
@@ -76,9 +87,4 @@ SELECT name, description, phone_number, created_at FROM businesses WHERE id = %s
             r = await cur.fetchone()
         if r is None:
             return None
-        return BusinessOutput(
-            r.name,
-            r.description,
-            r.phone_number,
-            r.created_at
-        )
+        return BusinessOutput(r.name, r.description, r.phone_number, r.created_at)

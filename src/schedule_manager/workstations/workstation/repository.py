@@ -20,7 +20,9 @@ from schedule_manager.utils.service_logging import log_repository_error
 @namespace
 class WorkstationRepository:
     @staticmethod
-    async def add(workstation: Workstation, conn: AsyncConnection[DictRow]) -> WorkstationAddOutput:
+    async def add(
+        workstation: Workstation, conn: AsyncConnection[DictRow]
+    ) -> WorkstationAddOutput:
         query = """
 INSERT INTO workstations (unit_id, name, description) VALUES (%s, %s, %s) RETURNING id, created_at;
 """
@@ -33,7 +35,12 @@ INSERT INTO workstations (unit_id, name, description) VALUES (%s, %s, %s) RETURN
             if r is None:
                 raise UnexpectedStateError
         except psycopg_errors.ForeignKeyViolation as error:
-            log_repository_error(WorkstationRepository, "add", error, {"unit_id": str(workstation.unit_id)})
+            log_repository_error(
+                WorkstationRepository,
+                "add",
+                error,
+                {"unit_id": str(workstation.unit_id)},
+            )
             raise WorkstationNotFoundError
         return WorkstationAddOutput(id=r["id"], created_at=r["created_at"])
 
@@ -48,7 +55,9 @@ DELETE FROM workstations WHERE id = %s;
         return row_count > 0
 
     @staticmethod
-    async def update(id: UUID, changes: WorkstationChanges, conn: AsyncConnection[DictRow]) -> bool:
+    async def update(
+        id: UUID, changes: WorkstationChanges, conn: AsyncConnection[DictRow]
+    ) -> bool:
         updates = []
         values = []
 
@@ -66,7 +75,7 @@ DELETE FROM workstations WHERE id = %s;
             return False
 
         query = f"""
-UPDATE workstations SET {', '.join(updates)} WHERE id = %s;
+UPDATE workstations SET {", ".join(updates)} WHERE id = %s;
 """
         values.append(id)
 
@@ -76,7 +85,9 @@ UPDATE workstations SET {', '.join(updates)} WHERE id = %s;
         return row_count > 0
 
     @staticmethod
-    async def get(id: UUID, conn: AsyncConnection[DictRow]) -> WorkstationGetOutput | None:
+    async def get(
+        id: UUID, conn: AsyncConnection[DictRow]
+    ) -> WorkstationGetOutput | None:
         query = """
 SELECT * FROM workstations WHERE id = %s;
 """

@@ -30,8 +30,6 @@ def namespace(cls):
             raise TypeError(f"{cls.__name__}.{name}: classmethod is forbidden.")
 
         if isinstance(value, FunctionType):
-            raise TypeError(
-                f"{cls.__name__}.{name}: missing @staticmethod."
-            )
+            raise TypeError(f"{cls.__name__}.{name}: missing @staticmethod.")
 
     return cls

@@ -6,66 +6,71 @@ from schedule_manager.core.ranges.convertions import RangeConverts
 from uuid import UUID
 from psycopg.types.range import Range
 
+
 # Membership
 @dataclass(frozen=True)
 class BusinessMembershipRow:
-    id:UUID
-    business_id:UUID
-    validity_range:Range
-    person_id:UUID
-    
+    id: UUID
+    business_id: UUID
+    validity_range: Range
+    person_id: UUID
 
 
 @dataclass(frozen=True)
 class BusinessMembership:
-    validity_range:NormalRange
-    business_id:UUID
-    person_id:UUID
+    validity_range: NormalRange
+    business_id: UUID
+    person_id: UUID
 
 
-def row_to_model(row:BusinessMembershipRow) -> BusinessMembership:
+def row_to_model(row: BusinessMembershipRow) -> BusinessMembership:
     return BusinessMembership(
         validity_range=RangeConverts.db_range_to_normal_range(row.validity_range),
         person_id=row.person_id,
-        business_id=row.business_id
+        business_id=row.business_id,
     )
 
 
 # Invite
 
+
 @dataclass(frozen=True)
 class BusinessMembershipInviteRow:
-    id:UUID
-    created_at:datetime
-    expires_at:datetime
+    id: UUID
+    created_at: datetime
+    expires_at: datetime
+
 
 @dataclass(frozen=True)
 class BusinessMembershipInvite:
-    id:UUID
-    created_at:datetime
-    expires_at:datetime
+    id: UUID
+    created_at: datetime
+    expires_at: datetime
+
 
 @dataclass(frozen=True)
 class BusinessMembershipInviteInput:
-    email:str
-    expires_at:datetime
+    email: str
+    expires_at: datetime
+
 
 # Translator
+
 
 @namespace
 class ModelTranslator:
     @staticmethod
-    def membership_row_to_mode(row:BusinessMembershipRow) -> BusinessMembership:
+    def membership_row_to_mode(row: BusinessMembershipRow) -> BusinessMembership:
         return BusinessMembership(
-        validity_range=RangeConverts.db_range_to_normal_range(row.validity_range),
-        person_id=row.person_id,
-        business_id=row.business_id
-    )
+            validity_range=RangeConverts.db_range_to_normal_range(row.validity_range),
+            person_id=row.person_id,
+            business_id=row.business_id,
+        )
 
     @staticmethod
-    def membership_invite_row_to_model(row:BusinessMembershipInviteRow) -> BusinessMembershipInvite:
+    def membership_invite_row_to_model(
+        row: BusinessMembershipInviteRow,
+    ) -> BusinessMembershipInvite:
         return BusinessMembershipInvite(
-            id=row.id,
-            created_at=row.created_at,
-            expires_at=row.expires_at
+            id=row.id, created_at=row.created_at, expires_at=row.expires_at
         )

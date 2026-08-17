@@ -2,6 +2,8 @@ from datetime import datetime, UTC
 from pydantic import GetCoreSchemaHandler
 from typing import Any
 from pydantic_core import core_schema
+
+
 class _DB_Begin:
     @classmethod
     def __get_pydantic_core_schema__(cls, source, handler):
@@ -14,6 +16,8 @@ class _NeverEnd:
         cls, source_type: Any, handler: GetCoreSchemaHandler
     ) -> core_schema.CoreSchema:
         return core_schema.is_instance_schema(cls)
+
+
 DB_BEGIN = _DB_Begin()
 NEVER_END = _NeverEnd()
 

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 from datetime import datetime
 from schedule_manager.common.missing import _Missing, MISSING
+
+
 @dataclass(frozen=True)
 class WorkstationRow:
     id: UUID
@@ -10,11 +12,13 @@ class WorkstationRow:
     description: str | None
     created_at: datetime
 
+
 @dataclass(frozen=True)
 class Workstation:
     unit_id: UUID
     name: str
     description: str | None
+
 
 @dataclass(frozen=True)
 class WorkstationChanges:
@@ -22,10 +26,13 @@ class WorkstationChanges:
     description: str | None | _Missing = MISSING
     unit_id: UUID | _Missing = MISSING
 
+
 @dataclass(frozen=True)
 class WorkstationAddOutput:
     id: UUID
     created_at: datetime
+
+
 @dataclass(frozen=True)
 class WorkstationGetOutput:
     id: UUID
@@ -33,4 +40,3 @@ class WorkstationGetOutput:
     name: str
     description: str | None
     created_at: datetime
-    

@@ -1,14 +1,18 @@
 from schedule_manager.capabilities.repository import (
-    CapabilitiesRepository, 
-    CapabilityInput, 
-    Capability, 
-    CapabilityAssignment
+    CapabilitiesRepository,
+    CapabilityInput,
+    Capability,
+    CapabilityAssignment,
 )
 from schedule_manager.capabilities.capabilities import Resource, Action
 from schedule_manager.utils.namespace import namespace
 from uuid import UUID
 from psycopg import AsyncConnection
-from schedule_manager.capabilities.schemas import CapabilityAddRequest, CapabilityEndRequest, CapabilityGetRequest
+from schedule_manager.capabilities.schemas import (
+    CapabilityAddRequest,
+    CapabilityEndRequest,
+    CapabilityGetRequest,
+)
 from psycopg.rows import DictRow
 from schedule_manager.capabilities.validator import CapabilitiesValidator
 from schedule_manager.business.memberships.validator import MembershipValidator
@@ -19,38 +23,45 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @namespace
 class RequestTranslator:
     @staticmethod
-    def capability_end_request_to_capability(entry:CapabilityEndRequest) -> Capability:
-        return Capability(
-            resource=entry.resource,
-            action=entry.action
-        )
+    def capability_end_request_to_capability(entry: CapabilityEndRequest) -> Capability:
+        return Capability(resource=entry.resource, action=entry.action)
+
     @staticmethod
-    def capability_add_request_to_input(entry:CapabilityAddRequest) -> CapabilityInput:
+    def capability_add_request_to_input(entry: CapabilityAddRequest) -> CapabilityInput:
         return CapabilityInput(
-            resource=entry.resource,
-            action=entry.action,
-            end_at=entry.end_at
-        )
-    @staticmethod
-    def capability_get_request_to_capability(entry:CapabilityGetRequest) -> Capability:
-        return Capability(
-            resource=entry.resource,
-            action=entry.action
+            resource=entry.resource, action=entry.action, end_at=entry.end_at
         )
 
+    @staticmethod
+    def capability_get_request_to_capability(entry: CapabilityGetRequest) -> Capability:
+        return Capability(resource=entry.resource, action=entry.action)
 
 
 @log_service_errors
 @namespace
 class CapabilitiesService:
     @staticmethod
-    async def has(person_id:UUID, target_person_id:UUID, business_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow]) -> bool:
-        await CapabilitiesValidator.validate_read_capability(person_id, Resource.CAPABILITIES, business_id, conn)
-        return await CapabilitiesRepository.has(target_person_id, request.target_id,
-                                                RequestTranslator.capability_get_request_to_capability(request), conn)
+    async def has(
+        person_id: UUID,
+        target_person_id: UUID,
+        business_id: UUID,
+        request: CapabilityGetRequest,
+        conn: AsyncConnection[DictRow],
+    ) -> bool:
+        await CapabilitiesValidator.validate_read_capability(
+            person_id, Resource.CAPABILITIES, business_id, conn
+        )
+        return await CapabilitiesRepository.has(
+            target_person_id,
+            request.target_id,
+            RequestTranslator.capability_get_request_to_capability(request),
+            conn,
+        )
+
     @staticmethod
     async def add(
         person_id: UUID,
@@ -87,13 +98,14 @@ class CapabilitiesService:
                 "resource": request.resource.name,
                 "action": request.action.name,
                 "target_id": str(request.target_id),
-                "end_at": request.end_at.isoformat() if request.end_at is not NEVER_END else NEVER_END,
+                "end_at": request.end_at.isoformat()
+                if request.end_at is not NEVER_END
+                else NEVER_END,
                 "capability_id": str(capability_id),
             },
         )
 
         return capability_id
-
 
     @staticmethod
     async def add_without_verifying(
@@ -117,13 +129,14 @@ class CapabilitiesService:
                 "resource": request.resource.name,
                 "action": request.action.name,
                 "target_id": str(request.target_id),
-                "end_at": request.end_at.isoformat() if request.end_at is not NEVER_END else NEVER_END,
+                "end_at": request.end_at.isoformat()
+                if request.end_at is not NEVER_END
+                else NEVER_END,
                 "capability_id": str(capability_id),
             },
         )
 
         return capability_id
-
 
     @staticmethod
     async def end_all(
@@ -175,7 +188,6 @@ class CapabilitiesService:
             },
         )
 
-
     @staticmethod
     async def end(
         person_id: UUID,
@@ -217,15 +229,41 @@ class CapabilitiesService:
         )
 
     @staticmethod
-    async def get_all(person_id:UUID, target_person_id:UUID, business_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow]) -> list[CapabilityAssignment]:
+    async def get_all(
+        person_id: UUID,
+        target_person_id: UUID,
+        business_id: UUID,
+        request: CapabilityGetRequest,
+        conn: AsyncConnection[DictRow],
+    ) -> list[CapabilityAssignment]:
         if person_id != target_person_id:
-            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES , business_id, conn)
-        return await CapabilitiesRepository.get_all_from_person(person_id, request.target_id,
-                                                                RequestTranslator.capability_get_request_to_capability(request), conn)
+            await CapabilitiesValidator.validate_manage_capability(
+                person_id, Resource.CAPABILITIES, business_id, conn
+            )
+        return await CapabilitiesRepository.get_all_from_person(
+            person_id,
+            request.target_id,
+            RequestTranslator.capability_get_request_to_capability(request),
+            conn,
+        )
+
     @staticmethod
-    async def get_last(person_id:UUID, target_person_id:UUID, business_id:UUID, request:CapabilityGetRequest, conn:AsyncConnection[DictRow], k:int = 1) -> list[CapabilityAssignment]:
+    async def get_last(
+        person_id: UUID,
+        target_person_id: UUID,
+        business_id: UUID,
+        request: CapabilityGetRequest,
+        conn: AsyncConnection[DictRow],
+        k: int = 1,
+    ) -> list[CapabilityAssignment]:
         if person_id != target_person_id:
-            await CapabilitiesValidator.validate_manage_capability(person_id, Resource.CAPABILITIES, business_id, conn)
-        return await CapabilitiesRepository.get_last(person_id, target_person_id,
-                                                    RequestTranslator.capability_get_request_to_capability(request), conn, k)
-    
+            await CapabilitiesValidator.validate_manage_capability(
+                person_id, Resource.CAPABILITIES, business_id, conn
+            )
+        return await CapabilitiesRepository.get_last(
+            person_id,
+            target_person_id,
+            RequestTranslator.capability_get_request_to_capability(request),
+            conn,
+            k,
+        )

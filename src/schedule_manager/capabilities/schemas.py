@@ -5,6 +5,7 @@ from datetime import datetime
 from schedule_manager.capabilities.errors import InvalidCapabilitiesCombinationError
 from schedule_manager.core.ranges.constants import _NeverEnd, NEVER_END
 
+
 class CapabilityAddRequest(BaseModel):
     resource: Resource
     action: Action
@@ -19,12 +20,15 @@ class CapabilityAddRequest(BaseModel):
             )
 
         return self
+
+
 class CapabilityGetRequest(BaseModel):
-    resource:Resource
-    action:Action
-    target_id:UUID
+    resource: Resource
+    action: Action
+    target_id: UUID
+
 
 class CapabilityEndRequest(BaseModel):
-    resource:Resource
-    action:Action
-    target_id:UUID
+    resource: Resource
+    action: Action
+    target_id: UUID

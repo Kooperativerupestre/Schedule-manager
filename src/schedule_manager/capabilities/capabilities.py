@@ -2,16 +2,17 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from schedule_manager.capabilities.errors import InvalidCapabilitiesCombinationError
 
+
 class AutoLowerEnum(str, Enum):
     @staticmethod
     def _generate_next_value_(name, start, count, last_values):
         return name.lower()
 
+
 class Resource(AutoLowerEnum):
     BUSINESS = auto()
     UNIT = auto()
     WORKSTATION = auto()
-
 
     BUSINESS_HOLIDAYS = auto()
     UNIT_HOLIDAYS = auto()
@@ -19,7 +20,6 @@ class Resource(AutoLowerEnum):
 
     UNIT_LIFECYCLE = auto()
     WORKSTATION_LIFECYCLE = auto()
-
 
     WORKSTATION_WORK = auto()
     CAPABILITIES = auto()
@@ -42,14 +42,11 @@ SCOPE_BY_RESOURCE = {
     Resource.BUSINESS: Scope.BUSINESS,
     Resource.UNIT: Scope.UNIT,
     Resource.WORKSTATION: Scope.WORKSTATION,
-
     Resource.BUSINESS_HOLIDAYS: Scope.BUSINESS,
     Resource.UNIT_HOLIDAYS: Scope.UNIT,
     Resource.WORKSTATION_HOLIDAYS: Scope.WORKSTATION,
-
     Resource.UNIT_LIFECYCLE: Scope.BUSINESS,
     Resource.WORKSTATION_LIFECYCLE: Scope.UNIT,
-    
     Resource.WORKSTATION_WORK: Scope.WORKSTATION,
     Resource.CAPABILITIES: Scope.BUSINESS,
     Resource.MEMBERS: Scope.BUSINESS,
@@ -62,8 +59,10 @@ COLUMN_BY_SCOPE = {
     Scope.WORKSTATION: "workstation_id",
 }
 
-def choose_scope(resource:Resource) -> Scope:
+
+def choose_scope(resource: Resource) -> Scope:
     return SCOPE_BY_RESOURCE[resource]
+
 
 @dataclass(frozen=True)
 class Capability:
@@ -73,7 +72,10 @@ class Capability:
     def __post_init__(self):
         if self.action == Action.INVITE and self.resource != Resource.MEMBERS:
             raise InvalidCapabilitiesCombinationError("Only members support invite")
-        elif self.action in [Action.INVITE, Action.READ] and self.resource == Resource.UNIT_LIFECYCLE:
+        elif (
+            self.action in [Action.INVITE, Action.READ]
+            and self.resource == Resource.UNIT_LIFECYCLE
+        ):
             raise InvalidCapabilitiesCombinationError("Unit lifecycle only have")
 
     @property
@@ -87,6 +89,7 @@ class Capability:
     @property
     def column_name(self) -> str:
         return COLUMN_BY_SCOPE[self.scope]
+
 
 def capability_from_name(name: str) -> Capability:
     resource_name, action_name = name.rsplit("_", 1)

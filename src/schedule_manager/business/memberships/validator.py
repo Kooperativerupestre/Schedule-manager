@@ -9,17 +9,29 @@ from schedule_manager.capabilities.errors import ForbiddenError
 from schedule_manager.capabilities.capabilities import Action, Capability, Resource
 from schedule_manager.capabilities.repository import CapabilitiesRepository
 
+
 @namespace
 class MembershipValidator:
     @staticmethod
-    async def validate_membership(person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
-        membership = await MembershipRepository.get(person_id, business_id, conn, MembershipStatus.ACTIVE)
+    async def validate_membership(
+        person_id: UUID, business_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> None:
+        membership = await MembershipRepository.get(
+            person_id, business_id, conn, MembershipStatus.ACTIVE
+        )
         if not membership:
             raise NotBusinessMembershipError
+
     @staticmethod
-    async def validate_capability_membership(person_id:UUID, business_id:UUID, action:Action, conn:AsyncConnection[DictRow]) -> None:
-        has = await CapabilitiesRepository.has(person_id, business_id, Capability(Resource.MEMBERS, action), conn)
+    async def validate_capability_membership(
+        person_id: UUID,
+        business_id: UUID,
+        action: Action,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
+        has = await CapabilitiesRepository.has(
+            person_id, business_id, Capability(Resource.MEMBERS, action), conn
+        )
 
         if not has:
             raise ForbiddenError
-    

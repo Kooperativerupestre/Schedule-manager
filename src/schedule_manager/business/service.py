@@ -18,15 +18,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @namespace
 class RequestTranslator:
     @staticmethod
-    def add_request_to_business(request:BusinessAddRequest) -> Business:
-        return Business(
-            request.name,
-            request.description,
-            request.phone_number
-        )
+    def add_request_to_business(request: BusinessAddRequest) -> Business:
+        return Business(request.name, request.description, request.phone_number)
+
     @staticmethod
     def update_request_to_business(request: BusinessUpdateRequest) -> BusinessChanges:
         fields = request.model_fields_set
@@ -37,41 +35,120 @@ class RequestTranslator:
         )
 
 
-        
 @log_service_errors
 @namespace
 class BusinessService:
     @staticmethod
-    async def add(person_id:UUID, request:BusinessAddRequest, conn:AsyncConnection[DictRow]) -> UUID:
-        business_id = await BusinessRepository.add(RequestTranslator.add_request_to_business(request), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.MANAGE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.BUSINESS, Action.READ, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.MANAGE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.READ, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.MEMBERS, Action.INVITE, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.UNIT_LIFECYCLE, Action.MANAGE, NEVER_END), conn)
+    async def add(
+        person_id: UUID, request: BusinessAddRequest, conn: AsyncConnection[DictRow]
+    ) -> UUID:
+        business_id = await BusinessRepository.add(
+            RequestTranslator.add_request_to_business(request), conn
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.BUSINESS, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.BUSINESS, Action.READ, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.MEMBERS, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.MEMBERS, Action.READ, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.MEMBERS, Action.INVITE, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.UNIT_LIFECYCLE, Action.MANAGE, NEVER_END),
+            conn,
+        )
         await MembershipRepository.add(person_id, business_id, conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END), conn)
-        await CapabilitiesRepository.add(person_id, business_id, CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END), conn)
-        logger.info("business.created", extra={"actor_id": str(person_id), "business_id": str(business_id), "request": model_context(request)})
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.CAPABILITIES, Action.READ, NEVER_END),
+            conn,
+        )
+        await CapabilitiesRepository.add(
+            person_id,
+            business_id,
+            CapabilityInput(Resource.CAPABILITIES, Action.MANAGE, NEVER_END),
+            conn,
+        )
+        logger.info(
+            "business.created",
+            extra={
+                "actor_id": str(person_id),
+                "business_id": str(business_id),
+                "request": model_context(request),
+            },
+        )
         return business_id
-        
+
     @staticmethod
-    async def delete(person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> None:
-        await BusinessValidator.validate_manage_business_capability(person_id, business_id, conn)
+    async def delete(
+        person_id: UUID, business_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> None:
+        await BusinessValidator.validate_manage_business_capability(
+            person_id, business_id, conn
+        )
         r = await BusinessRepository.delete(business_id, conn)
         if not r:
             raise BusinessNotFoundError
-        logger.info("business.deleted", extra={"actor_id": str(person_id), "business_id": str(business_id)})
+        logger.info(
+            "business.deleted",
+            extra={"actor_id": str(person_id), "business_id": str(business_id)},
+        )
+
     @staticmethod
-    async def get(person_id:UUID, business_id:UUID, conn:AsyncConnection[DictRow]) -> BusinessOutput | None:
-        await BusinessValidator.validate_read_business_capability(person_id, business_id, conn)
+    async def get(
+        person_id: UUID, business_id: UUID, conn: AsyncConnection[DictRow]
+    ) -> BusinessOutput | None:
+        await BusinessValidator.validate_read_business_capability(
+            person_id, business_id, conn
+        )
         business = await BusinessRepository.get(business_id, conn)
         return business
+
     @staticmethod
-    async def update(person_id:UUID, business_id:UUID, request:BusinessUpdateRequest, conn:AsyncConnection[DictRow]) -> None:
-        await BusinessValidator.validate_manage_business_capability(person_id, business_id, conn)
-        r = await BusinessRepository.update(business_id, RequestTranslator.update_request_to_business(request), conn)
+    async def update(
+        person_id: UUID,
+        business_id: UUID,
+        request: BusinessUpdateRequest,
+        conn: AsyncConnection[DictRow],
+    ) -> None:
+        await BusinessValidator.validate_manage_business_capability(
+            person_id, business_id, conn
+        )
+        r = await BusinessRepository.update(
+            business_id, RequestTranslator.update_request_to_business(request), conn
+        )
         if r == 0:
             raise BusinessNotFoundError
-        logger.info("business.updated", extra={"actor_id": str(person_id), "business_id": str(business_id), "request": model_context(request)})
+        logger.info(
+            "business.updated",
+            extra={
+                "actor_id": str(person_id),
+                "business_id": str(business_id),
+                "request": model_context(request),
+            },
+        )
