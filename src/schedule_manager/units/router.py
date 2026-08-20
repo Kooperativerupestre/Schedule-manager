@@ -6,12 +6,30 @@ from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 from schedule_manager.units.schemas import UnitAddRequest, UnitUpdateRequest
 from schedule_manager.units.service import UnitService
+from schedule_manager.infraestructure.redis.dependencies import rate_limit
+from schedule_manager.infraestructure.redis.redis import RateLimitScope
 
 
 router = APIRouter(prefix="/units", tags=["units"])
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="units:add:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def add(
     request: UnitAddRequest,
     person_id: UUID = Depends(get_current_person_id),
@@ -20,7 +38,23 @@ async def add(
     return await UnitService.add(person_id, request, conn)
 
 
-@router.delete("/{business_id}")
+@router.delete(
+    "/{business_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="units:delete:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def delete(
     business_id: UUID,
     unit_id: UUID,
@@ -30,7 +64,23 @@ async def delete(
     await UnitService.delete(person_id, business_id, unit_id, conn)
 
 
-@router.patch("/{unit_id}")
+@router.patch(
+    "/{unit_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="units:update:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def update(
     unit_id: UUID,
     request: UnitUpdateRequest,
@@ -40,7 +90,23 @@ async def update(
     await UnitService.update(person_id, unit_id, request, conn)
 
 
-@router.get("/{unit_id}")
+@router.get(
+    "/{unit_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="units:get:{person_id}",
+                        capacity=60,
+                        refill_rate=5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def get(
     unit_id: UUID,
     person_id: UUID = Depends(get_current_person_id),

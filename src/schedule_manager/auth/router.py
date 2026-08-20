@@ -8,11 +8,29 @@ from schedule_manager.db.connection import get_transaction
 from schedule_manager.auth.service import AuthenticationService, InvalidCredentialsError
 from schedule_manager.auth.cookies import set_cookie, clear_cookie
 from schedule_manager.auth.dependencies import get_current_person_id
+from schedule_manager.infraestructure.redis.dependencies import rate_limit
+from schedule_manager.infraestructure.redis.redis import RateLimitScope
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/login/local")
+@router.post(
+    "/login/local",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="auth:login:{ip}",
+                        capacity=5,
+                        refill_rate=0.2,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def login_local(
     data: LocalLoginRequest,
     response: Response,
@@ -26,12 +44,44 @@ async def login_local(
     set_cookie(response, data.id)
 
 
-@router.post("/logout")
+@router.post(
+    "/logout",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="auth:logout:{ip}",
+                        capacity=10,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def logout(response: Response):
     clear_cookie(response)
 
 
-@router.delete("")
+@router.delete(
+    "",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="auth:delete:{ip}",
+                        capacity=5,
+                        refill_rate=0.2,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def delete_authentication(
     conn: AsyncConnection[DictRow] = Depends(get_transaction),
     id: UUID = Depends(get_current_person_id),

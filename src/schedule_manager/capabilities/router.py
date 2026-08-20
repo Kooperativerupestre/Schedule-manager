@@ -10,11 +10,29 @@ from schedule_manager.capabilities.schemas import (
 )
 from schedule_manager.capabilities.service import CapabilitiesService
 from psycopg.rows import DictRow
+from schedule_manager.infraestructure.redis.dependencies import rate_limit
+from schedule_manager.infraestructure.redis.redis import RateLimitScope
 
 router = APIRouter(prefix="/capability", tags=["capability"])
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="capabilities:add:{person_id}",
+                        capacity=15,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def add(
     request: CapabilityAddRequest,
     target_person_id: UUID,
@@ -27,7 +45,23 @@ async def add(
     )
 
 
-@router.patch("")
+@router.patch(
+    "",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="capabilities:end:{person_id}",
+                        capacity=15,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def end(
     request: CapabilityEndRequest,
     target_person_id: UUID,
@@ -40,7 +74,23 @@ async def end(
     )
 
 
-@router.get("/has/{target_id}/{capability}")
+@router.get(
+    "/has/{target_id}/{capability}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="capabilities:has:{person_id}",
+                        capacity=60,
+                        refill_rate=5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def has(
     request: CapabilityGetRequest,
     target_person_id: UUID,
@@ -53,7 +103,23 @@ async def has(
     )
 
 
-@router.get("/all/{target_id}/{capability}")
+@router.get(
+    "/all/{target_id}/{capability}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="capabilities:all:{person_id}",
+                        capacity=60,
+                        refill_rate=5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def get_all(
     request: CapabilityGetRequest,
     target_person_id: UUID,
@@ -66,7 +132,23 @@ async def get_all(
     )
 
 
-@router.get("/last/{target_id}/{capability}")
+@router.get(
+    "/last/{target_id}/{capability}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="capabilities:last:{person_id}",
+                        capacity=60,
+                        refill_rate=5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def get_last(
     request: CapabilityGetRequest,
     target_person_id: UUID,

@@ -11,12 +11,30 @@ from schedule_manager.workstations.exceptions.schemas import (
     WorkstationExceptionUpdateRequest,
 )
 from schedule_manager.workstations.exceptions.service import WorkstationExceptionService
+from schedule_manager.infraestructure.redis.dependencies import rate_limit
+from schedule_manager.infraestructure.redis.redis import RateLimitScope
 
 
 router = APIRouter(prefix="/workstation-exceptions", tags=["workstation-exceptions"])
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="workstation-exceptions:add:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def add(
     request: WorkstationExceptionAddRequest,
     person_id: UUID = Depends(get_current_person_id),
@@ -25,7 +43,23 @@ async def add(
     return await WorkstationExceptionService.add(person_id, request, conn)
 
 
-@router.patch("/{workstation_id}")
+@router.patch(
+    "/{workstation_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="workstation-exceptions:update:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def update(
     workstation_id: UUID,
     request: WorkstationExceptionUpdateRequest,
@@ -35,7 +69,23 @@ async def update(
     await WorkstationExceptionService.update(person_id, workstation_id, request, conn)
 
 
-@router.delete("/{workstation_id}")
+@router.delete(
+    "/{workstation_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="workstation-exceptions:delete:{person_id}",
+                        capacity=20,
+                        refill_rate=1,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def delete(
     workstation_id: UUID,
     person_id: UUID = Depends(get_current_person_id),
@@ -44,7 +94,23 @@ async def delete(
     await WorkstationExceptionService.delete(person_id, workstation_id, conn)
 
 
-@router.get("/{workstation_id}")
+@router.get(
+    "/{workstation_id}",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="workstation-exceptions:get:{person_id}",
+                        capacity=60,
+                        refill_rate=5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def get(
     workstation_id: UUID,
     person_id: UUID = Depends(get_current_person_id),

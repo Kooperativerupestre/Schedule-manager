@@ -11,12 +11,30 @@ from schedule_manager.people.schemas import (
 )
 from schedule_manager.auth.dependencies import get_current_person_id
 from schedule_manager.auth.cookies import set_cookie
+from schedule_manager.infraestructure.redis.dependencies import rate_limit
+from schedule_manager.infraestructure.redis.redis import RateLimitScope
 
 
 router = APIRouter(prefix="/people", tags=["people"])
 
 
-@router.post("/local")
+@router.post(
+    "/local",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="people:create:{ip}",
+                        capacity=5,
+                        refill_rate=0.2,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def add_local(
     data: LocalPersonCreateRequest,
     response: Response,
@@ -31,7 +49,23 @@ async def add_local(
     set_cookie(response, r.id)
 
 
-@router.delete("/")
+@router.delete(
+    "/",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="people:delete:{person_id}",
+                        capacity=5,
+                        refill_rate=0.2,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def delete(
     id: UUID = Depends(get_current_person_id),
     conn: AsyncConnection[DictRow] = Depends(get_transaction),
@@ -45,7 +79,23 @@ async def delete(
         raise HTTPException(status_code=500)
 
 
-@router.patch("/")
+@router.patch(
+    "/",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="people:update:{person_id}",
+                        capacity=10,
+                        refill_rate=0.5,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def update(
     update: PersonUpdateRequest,
     id: UUID = Depends(get_current_person_id),
@@ -59,7 +109,23 @@ async def update(
         raise HTTPException(status_code=500)
 
 
-@router.get("/")
+@router.get(
+    "/",
+    dependencies=[
+        Depends(
+            rate_limit(
+                [
+                    RateLimitScope(
+                        bucket_key="people:get:{person_id}",
+                        capacity=30,
+                        refill_rate=2,
+                        ttl=60,
+                    )
+                ]
+            )
+        )
+    ],
+)
 async def get(
     id: UUID = Depends(get_current_person_id),
     conn: AsyncConnection[DictRow] = Depends(get_connection),

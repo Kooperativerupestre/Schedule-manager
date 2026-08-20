@@ -16,7 +16,7 @@ from pathlib import Path
 class RateLimitScope:
     bucket_key: str
     capacity: int
-    refill_rate: int
+    refill_rate: int | float
     ttl: int
 
 
