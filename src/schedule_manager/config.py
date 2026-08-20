@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     test_database_url: str
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
+    redis_url: str = "redis://localhost:6379"
 
     model_config = SettingsConfigDict(
         env_file=ROOT / ".env",

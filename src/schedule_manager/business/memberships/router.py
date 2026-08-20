@@ -15,9 +15,7 @@ from schedule_manager.db.connection import get_connection, get_transaction
 
 
 router = APIRouter(prefix="/memberships", tags=["memberships"])
-invites_router = APIRouter(
-    prefix="/memberships/invites", tags=["memberships-invites"]
-)
+invites_router = APIRouter(prefix="/memberships/invites", tags=["memberships-invites"])
 
 
 @router.post("")
