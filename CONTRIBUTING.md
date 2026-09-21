@@ -21,7 +21,7 @@ Use the following types to categorize your commits:
   
 - **refactor**: Use for structural changes, codebase reorganization, or architectural rewrites without necessarily introducing new features.
   
-- **enhances**: Use exclusively when improving or optimizing an existing feature or performance.
+- **enhance**: Use exclusively when improving or optimizing an existing feature or performance.
   
 - **delete**: Use for any removal of functionality, code, or database schemas.
   
