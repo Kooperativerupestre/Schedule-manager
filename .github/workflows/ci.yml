@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  ci:
+    name: Lint, Type Check and Tests in Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare environment file
+        run: |
+          cp .env.example .env
+
+      - name: Build Docker containers
+        run: |
+          docker compose build
+
+      - name: Run Ruff Lint Check
+        run: |
+          docker compose run --rm app ruff check .
+
+      - name: Run Pyright Type Check
+        run: |
+          docker compose run --rm app pyright
+
+      - name: Run Pytest Suite
+        run: |
+          docker compose run --rm app pytest tests/
