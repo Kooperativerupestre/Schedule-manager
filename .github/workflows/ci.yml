@@ -7,30 +7,50 @@ on:
     branches: [ "main" ]
 
 jobs:
-  ci:
-    name: Lint, Type Check and Tests in Docker
+  lint:
+    name: Ruff Linter
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Prepare environment file
-        run: |
-          cp .env.example .env
+        run: cp .env.example .env
 
       - name: Build Docker containers
-        run: |
-          docker compose build
+        run: docker compose build
 
-      - name: Run Ruff Lint Check
-        run: |
-          docker compose run --rm app ruff check .
+      - name: Run Ruff
+        run: docker compose run --rm app ruff check .
 
-      - name: Run Pyright Type Check
-        run: |
-          docker compose run --rm app pyright
+  typecheck:
+    name: Pyright Type Checker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Run Pytest Suite
-        run: |
-          docker compose run --rm app pytest tests/
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      - name: Build Docker containers
+        run: docker compose build
+
+      - name: Run Pyright
+        run: docker compose run --rm app pyright
+
+  test:
+    name: Pytest Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      - name: Build Docker containers
+        run: docker compose build
+
+      - name: Run Tests
+        run: docker compose run --rm app pytest tests/
