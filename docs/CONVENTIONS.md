@@ -29,8 +29,7 @@ Give a subdomain its own package and the layers it needs instead of adding its b
 - Use one `AsyncSession` per request or task. Do not share a session between concurrently running asyncio tasks.
 - Database tests must use `POSTGRES_TEST_DB` and the shared `test_session` fixture from `tests/conftest.py`.
 - Put broadly shared fixtures in `tests/conftest.py` and domain/subdomain fixtures in the corresponding test package's `conftest.py`.
-- Mirror the source domain and subdomain layout under `tests/`, such as `tests/business/memberships/`, and separate tests by layer or concern.
-- Make each test verify one independent behavior or invariant. Keep unrelated outcomes and assertions in separate tests so failures identify the behavior that regressed.
+- Mirror the source domain and subdomain layout under `tests/`, such as `tests/business/memberships/`, and separate tests by layer or concern. See [HOW_TO_CREATE_TESTS](../tests/HOW_TO_CREATE_TESTS.md) for test selection and granularity.
 - Keep authorization tests with their domain/subdomain behavior tests; use `tests/capabilities/` for cross-domain capability behavior.
 - Concurrency tests must use independent sessions/connections.
 
