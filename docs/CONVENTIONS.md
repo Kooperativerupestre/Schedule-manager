@@ -23,6 +23,7 @@ Give a subdomain its own package and the layers it needs instead of adding its b
 - Put domain-specific errors in `src/schedule_manager/<domain>/errors.py`.
 - Put only cross-domain errors in `src/schedule_manager/core/errors.py`.
 - Derive domain errors from corresponding core errors when they represent shared conditions.
+- Keep HTTP error translation in `src/schedule_manager/core/exception_handlers.py`, not in routers. Domain errors returned through the API must inherit a core error type with a registered handler. When adding a new core error category, register its HTTP handler and add a test for its response.
 
 ## Database sessions and tests
 

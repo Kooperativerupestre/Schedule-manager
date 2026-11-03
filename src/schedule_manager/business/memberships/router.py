@@ -1,10 +1,10 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schedule_manager.business.errors import BusinessForbiddenError
+from schedule_manager.business.memberships.errors import MembershipNotFoundError
 from schedule_manager.business.memberships.schemas import (
     MembershipAddRequest,
     MembershipCreateResponse,
@@ -33,18 +33,12 @@ async def add_business_member(
     session: SessionDep,
     response: Response,
 ) -> MembershipCreateResponse:
-    try:
-        created = await MembershipService.add(
-            session,
-            business_id,
-            request.member_id,
-            request.assigner_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
+    created = await MembershipService.add(
+        session,
+        business_id,
+        request.member_id,
+        request.assigner_id,
+    )
 
     if not created:
         response.status_code = status.HTTP_200_OK
@@ -61,24 +55,15 @@ async def get_business_membership(
     requester_id: UUID,
     session: SessionDep,
 ) -> MembershipResponse:
-    try:
-        membership = await MembershipService.get(
-            session,
-            business_id,
-            member_id,
-            requester_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
+    membership = await MembershipService.get(
+        session,
+        business_id,
+        member_id,
+        requester_id,
+    )
 
     if membership is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Business membership not found.",
-        )
+        raise MembershipNotFoundError("Business membership not found.")
     return MembershipResponse.model_validate(membership)
 
 
@@ -92,22 +77,13 @@ async def remove_business_member(
     remover_id: UUID,
     session: SessionDep,
 ) -> Response:
-    try:
-        removed = await MembershipService.remove(
-            session,
-            business_id,
-            member_id,
-            remover_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
+    removed = await MembershipService.remove(
+        session,
+        business_id,
+        member_id,
+        remover_id,
+    )
 
     if not removed:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Business membership not found.",
-        )
+        raise MembershipNotFoundError("Business membership not found.")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

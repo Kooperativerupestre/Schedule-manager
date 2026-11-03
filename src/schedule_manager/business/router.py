@@ -1,13 +1,9 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schedule_manager.business.errors import (
-    BusinessForbiddenError,
-    BusinessNotFoundError,
-)
 from schedule_manager.business.schemas import (
     BusinessAdd,
     BusinessCreateRequest,
@@ -28,22 +24,7 @@ async def get_business(
     requester_id: UUID,
     session: SessionDep,
 ) -> BusinessResponse:
-    try:
-        return await BusinessService.get(
-            session,
-            business_id,
-            requester_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
-    except BusinessNotFoundError as error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(error),
-        ) from error
+    return await BusinessService.get(session, business_id, requester_id)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -68,18 +49,12 @@ async def assign_business_owner(
     assignment: BusinessOwnerAssign,
     session: SessionDep,
 ) -> Response:
-    try:
-        await BusinessService.assign_owner(
-            session,
-            business_id,
-            assignment.owner_id,
-            assignment.assigner_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
+    await BusinessService.assign_owner(
+        session,
+        business_id,
+        assignment.owner_id,
+        assignment.assigner_id,
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -93,18 +68,12 @@ async def remove_business_owner(
     assigner_id: UUID,
     session: SessionDep,
 ) -> Response:
-    try:
-        await BusinessService.remove_owner(
-            session,
-            business_id,
-            owner_id,
-            assigner_id,
-        )
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
+    await BusinessService.remove_owner(
+        session,
+        business_id,
+        owner_id,
+        assigner_id,
+    )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -114,16 +83,5 @@ async def delete_business(
     assigner_id: UUID,
     session: SessionDep,
 ) -> Response:
-    try:
-        await BusinessService.delete(session, business_id, assigner_id)
-    except BusinessForbiddenError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(error),
-        ) from error
-    except BusinessNotFoundError as error:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(error),
-        ) from error
+    await BusinessService.delete(session, business_id, assigner_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
