@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from schedule_manager.core.errors import NotFoundError
 from schedule_manager.database.connection import get_session
 from schedule_manager.user.schemas import UserAdd
 from schedule_manager.user.service import UserService
@@ -27,9 +28,10 @@ async def delete_user(
     user_id: UUID,
     session: SessionDep,
 ) -> None:
-    deleted = await UserService.delete_user(session, user_id)
-    if not deleted:
+    try:
+        await UserService.delete_user(session, user_id)
+    except NotFoundError as error:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+            detail=str(error),
+        ) from error
