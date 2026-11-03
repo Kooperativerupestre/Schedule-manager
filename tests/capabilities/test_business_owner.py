@@ -5,6 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schedule_manager.business.errors import BusinessForbiddenError
+from schedule_manager.business.memberships.repository import (
+    MembershipRepository,
+)
 from schedule_manager.business.model import BusinessOwner
 from schedule_manager.business.schemas import BusinessAdd
 from schedule_manager.business.service import BusinessService
@@ -24,6 +27,11 @@ async def test_only_business_owners_can_assign_ownership(
         test_session,
         BusinessAdd(name="Example business"),
         creator.id,
+    )
+    assert await MembershipRepository.add(
+        test_session,
+        business_id,
+        other_owner.id,
     )
 
     assert await BusinessService.assign_owner(
@@ -65,6 +73,11 @@ async def test_only_business_owners_can_remove_owner_capability(
         BusinessAdd(name="Example business"),
         creator.id,
     )
+    assert await MembershipRepository.add(
+        test_session,
+        business_id,
+        owner.id,
+    )
     assert await BusinessService.assign_owner(
         test_session, business_id, owner.id, creator.id
     )
@@ -99,3 +112,25 @@ async def test_only_business_owners_can_delete_business(
         await BusinessService.delete(test_session, business_id, non_owner.id)
 
     assert await BusinessService.delete(test_session, business_id, creator.id)
+
+
+@pytest.mark.anyio
+async def test_cannot_assign_nonmember_as_owner(
+    test_session: AsyncSession,
+    create_user: Callable[[AsyncSession, str], Awaitable[User]],
+) -> None:
+    creator = await create_user(test_session, "Business creator")
+    nonmember = await create_user(test_session, "Nonmember")
+    business_id = await BusinessService.create(
+        test_session,
+        BusinessAdd(name="Example business"),
+        creator.id,
+    )
+
+    with pytest.raises(BusinessForbiddenError):
+        await BusinessService.assign_owner(
+            test_session,
+            business_id,
+            nonmember.id,
+            creator.id,
+        )

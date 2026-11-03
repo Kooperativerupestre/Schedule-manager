@@ -6,6 +6,9 @@ from schedule_manager.business.errors import (
     BusinessForbiddenError,
     BusinessNotFoundError,
 )
+from schedule_manager.business.memberships.repository import (
+    MembershipRepository,
+)
 from schedule_manager.business.repository import BusinessRepository
 from schedule_manager.business.schema_translator import BusinessSchemaTranslator
 from schedule_manager.business.schemas import BusinessAdd
@@ -34,6 +37,15 @@ class BusinessService:
         assigner_id: UUID,
     ) -> bool:
         await BusinessService._require_owner(session, business_id, assigner_id)
+        recipient_is_member = await MembershipRepository.get(
+            session,
+            business_id,
+            owner_id,
+        )
+        if recipient_is_member is None:
+            raise BusinessForbiddenError(
+                "Only a business member can become a business owner."
+            )
         return await BusinessRepository.assign_owner(
             session,
             business_id,
