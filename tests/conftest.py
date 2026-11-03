@@ -4,6 +4,9 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from schedule_manager.base_model import Base
+from schedule_manager.business.memberships.model import (
+    BusinessMember,
+)
 from schedule_manager.settings import settings
 from schedule_manager.user.model import User
 
@@ -21,6 +24,10 @@ async def test_session(anyio_backend: str) -> AsyncIterator[AsyncSession]:
         settings.database_url.set(database=settings.postgres_test_db)
     )
     try:
+        assert (
+            Base.metadata.tables[BusinessMember.__tablename__]
+            is BusinessMember.__table__
+        )
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
 

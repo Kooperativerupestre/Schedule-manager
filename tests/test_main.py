@@ -21,3 +21,5 @@ def test_business_routes_are_registered():
     paths = app.openapi()["paths"]
     assert "/businesses" in paths
     assert "/businesses/{business_id}/owners" in paths
+    assert "/businesses/{business_id}/memberships" in paths
+    assert "/businesses/{business_id}/memberships/{member_id}" in paths

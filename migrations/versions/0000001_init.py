@@ -36,6 +36,18 @@ def upgrade() -> None:
     """)
 
     op.execute("""
+        CREATE TABLE business_members (
+            user_id UUID NOT NULL
+                REFERENCES users(id) ON DELETE CASCADE,
+            business_id UUID NOT NULL
+                REFERENCES businesses(id) ON DELETE CASCADE,
+            begin_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+            PRIMARY KEY (user_id, business_id)
+        );
+    """)
+
+    op.execute("""
         CREATE TABLE units (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             name TEXT NOT NULL,
@@ -96,6 +108,7 @@ def downgrade() -> None:
     op.execute("DROP TYPE appointment_status;")
     op.execute("DROP TABLE workstations;")
     op.execute("DROP TABLE units;")
+    op.execute("DROP TABLE IF EXISTS business_members;")
     op.execute("DROP TABLE business_owners;")
     op.execute("DROP TABLE businesses;")
     op.execute("DROP TABLE users;")
