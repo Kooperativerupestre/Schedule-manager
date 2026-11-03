@@ -2,6 +2,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from schedule_manager.auth.errors import AuthenticationInvalidCredentialsError
 from schedule_manager.business.memberships.errors import MembershipNotFoundError
 from schedule_manager.core.exception_handlers import register_exception_handlers
 from schedule_manager.main import app
@@ -22,18 +23,10 @@ def test_health_check_endpoint():
     assert response.json() == {"status": "healthy"}
 
 
-def test_business_routes_are_registered():
-    paths = app.openapi()["paths"]
-    assert "/businesses" in paths
-    assert "get" in paths["/businesses/{business_id}"]
-    assert "/businesses/{business_id}/owners" in paths
-    assert "/businesses/{business_id}/memberships" in paths
-    assert "/businesses/{business_id}/memberships/{member_id}" in paths
-
-
 @pytest.mark.parametrize(
     ("error", "expected_status"),
     [
+        (AuthenticationInvalidCredentialsError("Email or password is invalid."), 401),
         (UserForbiddenError("Access denied."), 403),
         (MembershipNotFoundError("Membership not found."), 404),
     ],

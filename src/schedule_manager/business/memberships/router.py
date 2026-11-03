@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from schedule_manager.auth.dependencies import CurrentUser
 from schedule_manager.business.memberships.errors import MembershipNotFoundError
 from schedule_manager.business.memberships.schemas import (
     MembershipAddRequest,
@@ -31,13 +32,14 @@ async def add_business_member(
     business_id: UUID,
     request: MembershipAddRequest,
     session: SessionDep,
+    current_user: CurrentUser,
     response: Response,
 ) -> MembershipCreateResponse:
     created = await MembershipService.add(
         session,
         business_id,
         request.member_id,
-        request.assigner_id,
+        current_user.id,
     )
 
     if not created:
@@ -52,14 +54,14 @@ async def add_business_member(
 async def get_business_membership(
     business_id: UUID,
     member_id: UUID,
-    requester_id: UUID,
     session: SessionDep,
+    current_user: CurrentUser,
 ) -> MembershipResponse:
     membership = await MembershipService.get(
         session,
         business_id,
         member_id,
-        requester_id,
+        current_user.id,
     )
 
     if membership is None:
@@ -74,14 +76,14 @@ async def get_business_membership(
 async def remove_business_member(
     business_id: UUID,
     member_id: UUID,
-    remover_id: UUID,
     session: SessionDep,
+    current_user: CurrentUser,
 ) -> Response:
     removed = await MembershipService.remove(
         session,
         business_id,
         member_id,
-        remover_id,
+        current_user.id,
     )
 
     if not removed:

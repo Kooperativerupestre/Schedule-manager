@@ -14,6 +14,10 @@ Keep domain behavior in `src/schedule_manager/<domain>/`. Follow the existing do
 
 Services own domain rules, validation, authorization, and orchestration. Repositories perform a single persistence responsibility where practical and report database outcomes; they do not combine separate domain operations or decide whether a caller is authorized. Services compose repository operations when a workflow needs multiple writes, within the request/task transaction. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
 
+### Authentication responsibility
+
+Authentication is exclusively a service responsibility. Authentication repositories only persist and retrieve authentication records; they must never verify credentials, decide whether a user is authenticated, or hash passwords. The service hashes a password before passing its hash to the repository and verifies credentials after retrieving the record.
+
 ### Subdomains
 
 Give a subdomain its own package and the layers it needs instead of adding its behavior to a neighboring domain's service or repository. For example, business membership code belongs in `business/memberships/`, with its own model, repository, service, schemas, and router as needed.

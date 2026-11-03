@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict
 
 class MembershipAddRequest(BaseModel):
     member_id: UUID
-    assigner_id: UUID
 
 
 class MembershipCreateResponse(BaseModel):
