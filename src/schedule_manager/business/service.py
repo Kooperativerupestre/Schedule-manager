@@ -25,13 +25,22 @@ class BusinessService:
         created_business = await BusinessRepository.create(
             session,
             business_model,
-            creator_id,
         )
-        await MembershipRepository.add(
+        creator_assigned_as_owner = await BusinessRepository.assign_owner(
             session,
             created_business.id,
             creator_id,
         )
+        if not creator_assigned_as_owner:
+            raise RuntimeError("Could not assign business creator as owner.")
+
+        creator_added_as_member = await MembershipRepository.add(
+            session,
+            created_business.id,
+            creator_id,
+        )
+        if not creator_added_as_member:
+            raise RuntimeError("Could not add business creator as member.")
         return created_business.id
 
     @staticmethod

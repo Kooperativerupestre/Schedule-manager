@@ -12,7 +12,7 @@ Keep domain behavior in `src/schedule_manager/<domain>/`. Follow the existing do
 - `router.py`: HTTP endpoints and transport-level error mapping.
 - `errors.py`: errors specific to the domain.
 
-Services own domain rules, validation, authorization, and orchestration. Repositories perform persistence and report database outcomes; they do not decide whether a caller is authorized. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
+Services own domain rules, validation, authorization, and orchestration. Repositories perform a single persistence responsibility where practical and report database outcomes; they do not combine separate domain operations or decide whether a caller is authorized. Services compose repository operations when a workflow needs multiple writes, within the request/task transaction. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
 
 ### Subdomains
 

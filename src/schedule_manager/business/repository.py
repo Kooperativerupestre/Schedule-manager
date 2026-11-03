@@ -12,16 +12,8 @@ class BusinessRepository:
     async def create(
         session: AsyncSession,
         business: Business,
-        creator_id: UUID,
     ) -> Business:
         session.add(business)
-        await session.flush()
-        session.add(
-            BusinessOwner(
-                business_id=business.id,
-                owner_id=creator_id,
-            )
-        )
         await session.flush()
         return business
 
