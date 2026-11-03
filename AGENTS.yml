@@ -1,7 +1,7 @@
 project: Schedule Manager
 
 before_work:
-  - Read docs/CONVENTIONS.md, docs/HOW_TO_DOCUMENTATE.md, and CONTRIBUTING.md.
+  - Read docs/CONVENTIONS.md, docs/HOW_TO_DOCUMENTATE.md, tests/HOW_TO_CREATE_TESTS.md, and CONTRIBUTING.md.
   - Inspect the affected source files and tests; inspect migrations for schema changes.
   - Preserve unrelated work in the worktree.
 

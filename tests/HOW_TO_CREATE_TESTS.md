@@ -17,6 +17,9 @@ Do not add tests for behavior that is obvious from straightforward implementatio
 - Split independent outcomes into separate tests so each failure identifies the behavior that regressed.
 - Keep tests for distinct layers or concerns in separate files, following the source domain and subdomain layout under `tests/`.
 - Use `conftest.py` for shared setup, not to combine unrelated test scenarios.
+- Name tests for the behavior or invariant, not a configurable implementation value. For example, prefer “uses the configured session expiry” over embedding the current number of hours in the test name.
+- Cover service invariants such as rejecting invalid credentials before changing state. Do not add repository CRUD coverage mechanically; test repository contracts when those outcomes are important to preserve.
+- Add router or dependency tests when explicitly requested or when they verify a meaningful API/security behavior; do not add them automatically as a proxy for service coverage.
 
 ## Test Types
 
