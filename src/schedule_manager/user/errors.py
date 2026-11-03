@@ -1,4 +1,8 @@
-from schedule_manager.core.errors import NotFoundError
+from schedule_manager.core.errors import ForbiddenError, NotFoundError
+
+
+class UserForbiddenError(ForbiddenError):
+    pass
 
 
 class UserNotFoundError(NotFoundError):

@@ -1,12 +1,16 @@
 from uuid import UUID
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schedule_manager.user.model import User
 
 
 class UserRepository:
+    @staticmethod
+    async def get(session: AsyncSession, user_id: UUID) -> User | None:
+        return await session.scalar(select(User).where(User.id == user_id))
+
     @staticmethod
     async def create(session: AsyncSession, user: User) -> User:
         session.add(user)

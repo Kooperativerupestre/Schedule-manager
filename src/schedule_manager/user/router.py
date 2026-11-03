@@ -4,14 +4,34 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schedule_manager.core.errors import NotFoundError
 from schedule_manager.database.connection import get_session
-from schedule_manager.user.schemas import UserAdd
+from schedule_manager.user.errors import UserForbiddenError, UserNotFoundError
+from schedule_manager.user.schemas import UserAdd, UserResponse
 from schedule_manager.user.service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
+
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(
+    user_id: UUID,
+    requester_id: UUID,
+    session: SessionDep,
+) -> UserResponse:
+    try:
+        return await UserService.get(session, user_id, requester_id)
+    except UserForbiddenError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
+        ) from error
+    except UserNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
@@ -30,7 +50,7 @@ async def delete_user(
 ) -> None:
     try:
         await UserService.delete_user(session, user_id)
-    except NotFoundError as error:
+    except UserNotFoundError as error:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(error),
