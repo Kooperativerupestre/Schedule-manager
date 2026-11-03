@@ -1,5 +1,3 @@
-# database/models/user.py
-
 import uuid
 
 from sqlalchemy import Text, text
