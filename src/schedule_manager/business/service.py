@@ -11,10 +11,32 @@ from schedule_manager.business.memberships.repository import (
 )
 from schedule_manager.business.repository import BusinessRepository
 from schedule_manager.business.schema_translator import BusinessSchemaTranslator
-from schedule_manager.business.schemas import BusinessAdd
+from schedule_manager.business.schemas import BusinessAdd, BusinessResponse
 
 
 class BusinessService:
+    @staticmethod
+    async def get(
+        session: AsyncSession,
+        business_id: UUID,
+        requester_id: UUID,
+    ) -> BusinessResponse:
+        """Only a member of the business may read its details."""
+        requester_membership = await MembershipRepository.get(
+            session,
+            business_id,
+            requester_id,
+        )
+        if requester_membership is None:
+            raise BusinessForbiddenError(
+                "Only a business member can view business details."
+            )
+
+        business = await BusinessRepository.get(session, business_id)
+        if business is None:
+            raise BusinessNotFoundError("Business not found.")
+        return BusinessResponse.model_validate(business)
+
     @staticmethod
     async def create(
         session: AsyncSession,

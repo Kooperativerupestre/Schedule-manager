@@ -20,6 +20,7 @@ def test_health_check_endpoint():
 def test_business_routes_are_registered():
     paths = app.openapi()["paths"]
     assert "/businesses" in paths
+    assert "get" in paths["/businesses/{business_id}"]
     assert "/businesses/{business_id}/owners" in paths
     assert "/businesses/{business_id}/memberships" in paths
     assert "/businesses/{business_id}/memberships/{member_id}" in paths

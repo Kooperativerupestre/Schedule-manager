@@ -9,6 +9,15 @@ from schedule_manager.business.model import Business, BusinessOwner
 
 class BusinessRepository:
     @staticmethod
+    async def get(
+        session: AsyncSession,
+        business_id: UUID,
+    ) -> Business | None:
+        return await session.scalar(
+            select(Business).where(Business.id == business_id)
+        )
+
+    @staticmethod
     async def create(
         session: AsyncSession,
         business: Business,

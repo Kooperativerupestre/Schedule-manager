@@ -12,6 +12,7 @@ from schedule_manager.business.schemas import (
     BusinessAdd,
     BusinessCreateRequest,
     BusinessOwnerAssign,
+    BusinessResponse,
 )
 from schedule_manager.business.service import BusinessService
 from schedule_manager.database.connection import get_session
@@ -19,6 +20,30 @@ from schedule_manager.database.connection import get_session
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
+
+
+@router.get("/{business_id}", response_model=BusinessResponse)
+async def get_business(
+    business_id: UUID,
+    requester_id: UUID,
+    session: SessionDep,
+) -> BusinessResponse:
+    try:
+        return await BusinessService.get(
+            session,
+            business_id,
+            requester_id,
+        )
+    except BusinessForbiddenError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(error),
+        ) from error
+    except BusinessNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
