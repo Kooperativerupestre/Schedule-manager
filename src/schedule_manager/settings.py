@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> URL:
         return URL.create(
-            drivername="postgresql+asyncpg",
+            drivername="postgresql+psycopg",
             username=self.postgres_user,
             password=self.postgres_password,
             host=self.postgres_host,
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 

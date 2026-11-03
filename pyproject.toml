@@ -5,7 +5,7 @@ description = "A web-based schedule management system."
 license = "Apache-2.0"
 requires-python = ">=3.14"
 dependencies = [
-    "psycopg>=3.3.4",
+    "psycopg[binary]>=3.3.4",
     "sqlalchemy>=2.1.6",
     "greenlet>=3.1.1",
     "pydantic>=2.0",
