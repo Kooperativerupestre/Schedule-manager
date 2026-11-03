@@ -14,6 +14,10 @@ Keep domain behavior in `src/schedule_manager/<domain>/`. Follow the existing do
 
 Services own domain rules, validation, authorization, and orchestration. Repositories perform persistence and report database outcomes; they do not decide whether a caller is authorized. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
 
+### Subdomains
+
+Give a subdomain its own package and the layers it needs instead of adding its behavior to a neighboring domain's service or repository. For example, business membership code belongs in `business/memberships/`, with its own model, repository, service, schemas, and router as needed.
+
 ## Error organization
 
 - Put domain-specific errors in `src/schedule_manager/<domain>/errors.py`.
@@ -24,9 +28,16 @@ Services own domain rules, validation, authorization, and orchestration. Reposit
 
 - Use one `AsyncSession` per request or task. Do not share a session between concurrently running asyncio tasks.
 - Database tests must use `POSTGRES_TEST_DB` and the shared `test_session` fixture from `tests/conftest.py`.
-- Put shared fixtures in `tests/conftest.py`.
-- Organize behavior tests in `tests/business/` and authorization/capability tests in `tests/capabilities/`.
+- Put broadly shared fixtures in `tests/conftest.py` and domain/subdomain fixtures in the corresponding test package's `conftest.py`.
+- Mirror the source domain and subdomain layout under `tests/`, such as `tests/business/memberships/`, and separate tests by layer or concern.
+- Make each test verify one independent behavior or invariant. Keep unrelated outcomes and assertions in separate tests so failures identify the behavior that regressed.
+- Keep authorization tests with their domain/subdomain behavior tests; use `tests/capabilities/` for cross-domain capability behavior.
 - Concurrency tests must use independent sessions/connections.
+
+## Migrations
+
+- Treat an applied migration as immutable. Add a new incremental migration for schema changes that must reach databases where earlier revisions are already recorded.
+- Editing an old migration is appropriate only when it has not been applied in any environment that must be supported. When a schema change needs both a fresh-install definition and an upgrade path, keep the initial schema accurate and make the later migration safe for already-migrated databases.
 
 ## Dependencies and validation
 
