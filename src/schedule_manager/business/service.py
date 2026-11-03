@@ -27,6 +27,11 @@ class BusinessService:
             business_model,
             creator_id,
         )
+        await MembershipRepository.add(
+            session,
+            created_business.id,
+            creator_id,
+        )
         return created_business.id
 
     @staticmethod
