@@ -51,6 +51,16 @@ Business owners manage unit creation and deletion and are the only users who can
 
 Unit owners manage unit memberships but cannot grant or revoke ownership. Members can read unit and membership details; only unit owners can add or remove members. A member who is still a unit owner cannot have their membership removed until a business owner revokes that ownership. Deleting a unit also removes its memberships and ownership records.
 
+## Workstations and workers
+
+- Every workstation belongs to exactly one unit. A unit owner may create, rename, and delete workstations belonging to that unit; other users may not manage them.
+- Only a unit owner may hire workers for a workstation in that owner's unit. Hiring a user does not require that user to be a member of the unit.
+- An owner may hire themselves and work at a workstation they own. Ownership does not prevent someone from also being a worker.
+- A user may work at multiple workstations, and a workstation may have multiple workers. The same user may have at most one worker relationship with a given workstation.
+- A worker may end only their own work relationship. Ending it removes that relationship without deleting the user or affecting their work relationships with other workstations. Another person, including a unit owner, cannot dismiss the worker.
+- Any member of a workstation's unit may read its worker relationships. Reading a relationship does not require the reader to be an owner or worker.
+- Deleting a user or workstation removes the worker relationships attached to it. Deleting a unit also removes its workstations and, consequently, their worker relationships.
+
 ## Dependencies and validation
 
 - Use `uv` for Python dependency management. Run `uv sync` to synchronize dependencies.
