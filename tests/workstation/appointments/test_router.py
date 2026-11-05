@@ -10,6 +10,7 @@ from schedule_manager.auth.dependencies import get_current_user
 from schedule_manager.database.connection import get_session
 from schedule_manager.main import app
 from schedule_manager.workstation.appointments.schemas import (
+    AppointmentActionResult,
     AppointmentAdd,
     AppointmentResponse,
     AppointmentStatus,
@@ -20,6 +21,7 @@ from schedule_manager.workstation.service import WorkstationService
 WORKSTATION_ID = UUID("00000000-0000-0000-0000-000000000001")
 APPOINTMENT_ID = UUID("00000000-0000-0000-0000-000000000002")
 USER_ID = UUID("00000000-0000-0000-0000-000000000003")
+WORKER_ID = UUID("00000000-0000-0000-0000-000000000004")
 BEGIN_AT = datetime(2030, 1, 1, 9, tzinfo=UTC)
 END_AT = BEGIN_AT + timedelta(hours=1)
 
@@ -52,6 +54,7 @@ def _response() -> AppointmentResponse:
     return AppointmentResponse(
         id=APPOINTMENT_ID,
         workstation_id=WORKSTATION_ID,
+        worker_id=WORKER_ID,
         maker_id=USER_ID,
         made_at=BEGIN_AT,
         begin_at=BEGIN_AT,
@@ -73,6 +76,7 @@ def test_create_appointment_uses_authenticated_user_and_returns_conflict_result(
     monkeypatch.setattr(AppointmentService, "create", staticmethod(create))
     url = f"/workstations/{WORKSTATION_ID}/appointments"
     payload = {
+        "worker_id": str(WORKER_ID),
         "begin_at": BEGIN_AT.isoformat(),
         "end_at": END_AT.isoformat(),
     }
@@ -87,6 +91,7 @@ def test_create_appointment_uses_authenticated_user_and_returns_conflict_result(
     assert len(created_appointments) == 2
     assert created_appointments[0].maker_id == USER_ID
     assert created_appointments[0].workstation_id == WORKSTATION_ID
+    assert created_appointments[0].worker_id == WORKER_ID
 
 
 def test_range_and_availability_routes_validate_and_return_results(
@@ -178,3 +183,49 @@ def test_get_and_delete_appointment_are_scoped_to_workstation(
     assert deleted.content == b""
     assert wrong_workstation.status_code == 404
     assert deleted_ids == [APPOINTMENT_ID]
+
+
+def test_cancel_and_complete_routes_return_service_action_results(
+    appointment_client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def get(session: object, appointment_id: UUID) -> AppointmentResponse:
+        return _response()
+
+    cancel_calls: list[tuple[UUID, UUID]] = []
+    complete_calls: list[tuple[UUID, UUID]] = []
+
+    async def cancel(
+        session: object,
+        appointment_id: UUID,
+        requester_id: UUID,
+    ) -> AppointmentActionResult:
+        cancel_calls.append((appointment_id, requester_id))
+        return AppointmentActionResult.CANCELLED
+
+    async def complete(
+        session: object,
+        appointment_id: UUID,
+        requester_id: UUID,
+    ) -> AppointmentActionResult:
+        complete_calls.append((appointment_id, requester_id))
+        return AppointmentActionResult.COMPLETED
+
+    async def membership_lookup(*args: object) -> None:
+        raise AssertionError("Action endpoints must delegate authorization to service.")
+
+    monkeypatch.setattr(AppointmentService, "get", staticmethod(get))
+    monkeypatch.setattr(AppointmentService, "cancel", staticmethod(cancel))
+    monkeypatch.setattr(AppointmentService, "complete", staticmethod(complete))
+    monkeypatch.setattr(WorkstationService, "get", staticmethod(membership_lookup))
+    url = f"/workstations/{WORKSTATION_ID}/appointments/{APPOINTMENT_ID}"
+
+    cancelled = appointment_client.post(f"{url}/cancel")
+    completed = appointment_client.post(f"{url}/complete")
+
+    assert cancelled.status_code == 200
+    assert cancelled.json() == {"result": AppointmentActionResult.CANCELLED.value}
+    assert completed.status_code == 200
+    assert completed.json() == {"result": AppointmentActionResult.COMPLETED.value}
+    assert cancel_calls == [(APPOINTMENT_ID, USER_ID)]
+    assert complete_calls == [(APPOINTMENT_ID, USER_ID)]

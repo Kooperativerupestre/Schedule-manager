@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import Range
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -82,6 +82,24 @@ class AppointmentRepository:
         statement = (
             delete(Appointment)
             .where(Appointment.id == appointment_id)
+            .returning(Appointment.id)
+        )
+        result = await session.execute(statement)
+        return result.scalar_one_or_none() is not None
+
+    @staticmethod
+    async def set_status_if_pending(
+        session: AsyncSession,
+        appointment_id: UUID,
+        status: AppointmentStatus,
+    ) -> bool:
+        statement = (
+            update(Appointment)
+            .where(
+                Appointment.id == appointment_id,
+                Appointment.status == AppointmentStatus.PENDING,
+            )
+            .values(status=status)
             .returning(Appointment.id)
         )
         result = await session.execute(statement)

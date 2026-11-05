@@ -15,6 +15,7 @@ class AppointmentSchemaTranslator:
     def to_model(appointment: AppointmentAdd) -> Appointment:
         return Appointment(
             workstation_id=appointment.workstation_id,
+            worker_id=appointment.worker_id,
             maker_id=appointment.maker_id,
             period=Range(
                 appointment.begin_at,
@@ -43,6 +44,7 @@ class AppointmentSchemaTranslator:
         return AppointmentResponse(
             id=appointment.id,
             workstation_id=appointment.workstation_id,
+            worker_id=appointment.worker_id,
             maker_id=appointment.maker_id,
             made_at=appointment.made_at.astimezone(UTC),
             begin_at=begin_at,

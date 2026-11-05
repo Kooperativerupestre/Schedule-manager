@@ -12,6 +12,7 @@ class Worker(Base):
     __tablename__ = "workers"
     __table_args__ = (
         UniqueConstraint("user_id", "workstation_id"),
+        UniqueConstraint("id", "workstation_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

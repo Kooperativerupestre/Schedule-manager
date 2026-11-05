@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
@@ -26,7 +27,12 @@ class AppointmentTimeRange(BaseModel):
 
 class AppointmentAdd(AppointmentTimeRange):
     workstation_id: UUID
+    worker_id: UUID
     maker_id: UUID
+
+
+class AppointmentCreateRequest(AppointmentTimeRange):
+    worker_id: UUID
 
 
 class AppointmentCreateResponse(BaseModel):
@@ -37,11 +43,25 @@ class AppointmentAvailabilityResponse(BaseModel):
     can_schedule: bool
 
 
+class AppointmentActionResult(str, Enum):
+    CANCELLED = "Appointment cancelled successfully."
+    COMPLETED = "Appointment completed successfully."
+    NOT_FOUND = "Appointment not found."
+    ALREADY_CANCELLED = "Appointment was already cancelled."
+    ALREADY_COMPLETED = "Appointment was already completed."
+    FORBIDDEN = "You are not allowed to perform this appointment action."
+
+
+class AppointmentActionResponse(BaseModel):
+    result: AppointmentActionResult
+
+
 class AppointmentResponse(AppointmentTimeRange):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     workstation_id: UUID
+    worker_id: UUID | None
     maker_id: UUID
     made_at: datetime
     status: AppointmentStatus

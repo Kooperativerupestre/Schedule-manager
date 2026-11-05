@@ -6,12 +6,11 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     func,
     text,
 )
-from sqlalchemy import (
-    Enum as SqlEnum,
-)
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import (
     TSTZRANGE,
     UUID,
@@ -46,6 +45,12 @@ class Appointment(Base):
             where=text("status <> 'cancelled'"),
             name="no_overlapping_appointments",
         ),
+        ForeignKeyConstraint(
+            ["worker_id", "workstation_id"],
+            ["workers.id", "workers.workstation_id"],
+            ondelete="SET NULL (worker_id)",
+            name="appointment_worker_workstation_fkey",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -67,6 +72,10 @@ class Appointment(Base):
         UUID(as_uuid=True),
         ForeignKey("workstations.id", ondelete="CASCADE"),
         nullable=False,
+    )
+    worker_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True,
     )
     period: Mapped[Range[datetime]] = mapped_column(
         TSTZRANGE,

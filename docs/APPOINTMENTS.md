@@ -1,6 +1,6 @@
 # Workstation appointments
 
-Appointments are a workstation subdomain, persisted in the existing `appointments` table. An appointment has a maker, workstation, half-open time period (`[begin, end)`), and one of `pending`, `cancelled`, or `successful`.
+Appointments are a workstation subdomain, persisted in the existing `appointments` table. An appointment has a maker, assigned worker, workstation, half-open time period (`[begin, end)`), and one of `pending`, `cancelled`, or `successful`.
 
 ## Timezone and ranges
 
@@ -16,11 +16,18 @@ All application datetimes must be timezone-aware and UTC. Naive values are inval
 
 The exclusion constraint is scoped to one workstation and excludes canceled appointments. Concurrency tests must use independent sessions/connections and verify that simultaneous overlapping requests cannot create more than one active appointment.
 
+## Cancellation and completion
+
+Only the appointment maker, its assigned worker, or a unit owner can cancel it. Only its assigned worker can mark it successful. These transitions apply only while the appointment is pending and use an atomic conditional update. The service returns a result enum that distinguishes success, missing appointments, unauthorized requests, and appointments already canceled or completed. Deleting a worker keeps appointment history and clears the worker assignment; that detached appointment can still be canceled by its maker or a unit owner but cannot be completed by a worker.
+
+Migration `0000006` adds worker assignment to the existing appointments table and requires the table to be empty when applied because existing appointments cannot be safely assigned to workers automatically.
+
 ## HTTP API
 
 The authenticated endpoints are nested under `/workstations/{workstation_id}/appointments`. Users must be unit members to list, create, inspect, or delete appointments at a workstation. New appointments use the authenticated user as their maker; the maker ID is not accepted from the request body.
 
-- `POST /workstations/{workstation_id}/appointments` creates an appointment and returns `{"created": true}` (201) or `{"created": false}` on overlap (200).
+- `POST /workstations/{workstation_id}/appointments` accepts `worker_id`, `begin_at`, and `end_at`, then creates an appointment using the authenticated user as maker. It returns `{"created": true}` (201) or `{"created": false}` on overlap (200).
 - `GET /workstations/{workstation_id}/appointments?begin_at=...&end_at=...` lists overlapping appointments.
 - `GET /workstations/{workstation_id}/appointments/availability?begin_at=...&end_at=...` returns the advisory `can_schedule` result.
 - `GET` and `DELETE /workstations/{workstation_id}/appointments/{appointment_id}` inspect or remove one appointment.
+- `POST /workstations/{workstation_id}/appointments/{appointment_id}/cancel` and `/complete` return the service action result enum. Cancellation/completion authorization is based on the appointment maker, assigned worker, or unit owner as described above, not on general unit membership.

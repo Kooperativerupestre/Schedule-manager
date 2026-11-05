@@ -12,8 +12,11 @@ from schedule_manager.workstation.appointments.errors import (
     AppointmentNotFoundError,
 )
 from schedule_manager.workstation.appointments.schemas import (
+    AppointmentActionResponse,
+    AppointmentActionResult,
     AppointmentAdd,
     AppointmentAvailabilityResponse,
+    AppointmentCreateRequest,
     AppointmentCreateResponse,
     AppointmentResponse,
     AppointmentTimeRange,
@@ -55,7 +58,7 @@ async def _require_workstation_access(
 )
 async def create_appointment(
     workstation_id: UUID,
-    request: AppointmentTimeRange,
+    request: AppointmentCreateRequest,
     session: SessionDep,
     current_user: CurrentUser,
     response: Response,
@@ -65,6 +68,7 @@ async def create_appointment(
         session,
         AppointmentAdd(
             workstation_id=workstation_id,
+            worker_id=request.worker_id,
             maker_id=current_user.id,
             begin_at=request.begin_at,
             end_at=request.end_at,
@@ -127,6 +131,48 @@ async def get_appointment(
     if appointment is None or appointment.workstation_id != workstation_id:
         raise AppointmentNotFoundError("Appointment not found.")
     return appointment
+
+
+@router.post(
+    "/{appointment_id}/cancel",
+    response_model=AppointmentActionResponse,
+)
+async def cancel_appointment(
+    workstation_id: UUID,
+    appointment_id: UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> AppointmentActionResponse:
+    appointment = await AppointmentService.get(session, appointment_id)
+    if appointment is None or appointment.workstation_id != workstation_id:
+        return AppointmentActionResponse(result=AppointmentActionResult.NOT_FOUND)
+    result = await AppointmentService.cancel(
+        session,
+        appointment_id,
+        current_user.id,
+    )
+    return AppointmentActionResponse(result=result)
+
+
+@router.post(
+    "/{appointment_id}/complete",
+    response_model=AppointmentActionResponse,
+)
+async def complete_appointment(
+    workstation_id: UUID,
+    appointment_id: UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> AppointmentActionResponse:
+    appointment = await AppointmentService.get(session, appointment_id)
+    if appointment is None or appointment.workstation_id != workstation_id:
+        return AppointmentActionResponse(result=AppointmentActionResult.NOT_FOUND)
+    result = await AppointmentService.complete(
+        session,
+        appointment_id,
+        current_user.id,
+    )
+    return AppointmentActionResponse(result=result)
 
 
 @router.delete(
