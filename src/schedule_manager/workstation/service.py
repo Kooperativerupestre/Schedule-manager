@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +8,7 @@ from schedule_manager.unit.memberships.repository import (
     UnitMembershipRepository,
 )
 from schedule_manager.unit.repository import UnitRepository
+from schedule_manager.workstation.appointments.service import AppointmentService
 from schedule_manager.workstation.errors import (
     WorkstationForbiddenError,
     WorkstationNotFoundError,
@@ -22,6 +24,20 @@ from schedule_manager.workstation.schemas import (
 
 
 class WorkstationService:
+    @staticmethod
+    async def can_schedule(
+        session: AsyncSession,
+        workstation_id: UUID,
+        begin_at: datetime,
+        end_at: datetime,
+    ) -> bool:
+        return await AppointmentService.can_schedule(
+            session,
+            workstation_id,
+            begin_at,
+            end_at,
+        )
+
     @staticmethod
     async def create(
         session: AsyncSession,

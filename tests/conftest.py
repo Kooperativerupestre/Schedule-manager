@@ -29,6 +29,9 @@ async def test_session(anyio_backend: str) -> AsyncIterator[AsyncSession]:
             is BusinessMember.__table__
         )
         async with engine.begin() as connection:
+            await connection.exec_driver_sql(
+                "CREATE EXTENSION IF NOT EXISTS btree_gist"
+            )
             await connection.run_sync(Base.metadata.create_all)
 
         async with engine.connect() as connection:

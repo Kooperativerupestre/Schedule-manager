@@ -61,6 +61,11 @@ Unit owners manage unit memberships but cannot grant or revoke ownership. Member
 - Any member of a workstation's unit may read its worker relationships. Reading a relationship does not require the reader to be an owner or worker.
 - Deleting a user or workstation removes the worker relationships attached to it. Deleting a unit also removes its workstations and, consequently, their worker relationships.
 
+## Datetimes and appointments
+
+- Datetimes exchanged or constructed by application code must be timezone-aware and represented in UTC. Reject naive datetimes and normalize aware values to UTC; persist instants with PostgreSQL `TIMESTAMPTZ` (or `TSTZRANGE` for appointment periods).
+- Appointment overlap, range retrieval, cancellation, and concurrency guarantees are documented in [APPOINTMENTS](APPOINTMENTS.md).
+
 ## Dependencies and validation
 
 - Use `uv` for Python dependency management. Run `uv sync` to synchronize dependencies.

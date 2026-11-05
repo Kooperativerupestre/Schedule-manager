@@ -11,6 +11,9 @@ from schedule_manager.unit.memberships.router import (
 )
 from schedule_manager.unit.router import router as unit_router
 from schedule_manager.user.router import router as user_router
+from schedule_manager.workstation.appointments.router import (
+    router as appointments_router,
+)
 from schedule_manager.workstation.router import router as workstation_router
 from schedule_manager.workstation.workers.router import (
     router as workers_router,
@@ -27,6 +30,7 @@ app.include_router(unit_router)
 app.include_router(unit_memberships_router)
 app.include_router(workstation_router)
 app.include_router(workers_router)
+app.include_router(appointments_router)
 
 
 @app.get("/")
