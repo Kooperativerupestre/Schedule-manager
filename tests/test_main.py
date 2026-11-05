@@ -6,6 +6,9 @@ from schedule_manager.auth.errors import AuthenticationInvalidCredentialsError
 from schedule_manager.business.memberships.errors import MembershipNotFoundError
 from schedule_manager.core.exception_handlers import register_exception_handlers
 from schedule_manager.main import app
+from schedule_manager.unit.memberships.errors import (
+    UnitMembershipNotFoundError,
+)
 from schedule_manager.user.errors import UserForbiddenError
 
 client = TestClient(app)
@@ -29,6 +32,7 @@ def test_health_check_endpoint():
         (AuthenticationInvalidCredentialsError("Email or password is invalid."), 401),
         (UserForbiddenError("Access denied."), 403),
         (MembershipNotFoundError("Membership not found."), 404),
+        (UnitMembershipNotFoundError("Unit membership not found."), 404),
     ],
 )
 def test_domain_errors_use_global_exception_handlers(

@@ -6,6 +6,10 @@ from schedule_manager.business.memberships.router import (
 )
 from schedule_manager.business.router import router as business_router
 from schedule_manager.core.exception_handlers import register_exception_handlers
+from schedule_manager.unit.memberships.router import (
+    router as unit_memberships_router,
+)
+from schedule_manager.unit.router import router as unit_router
 from schedule_manager.user.router import router as user_router
 
 app = FastAPI(title="Schedule Manager")
@@ -15,6 +19,8 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(business_router)
 app.include_router(business_memberships_router)
+app.include_router(unit_router)
+app.include_router(unit_memberships_router)
 
 
 @app.get("/")

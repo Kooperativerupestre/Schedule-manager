@@ -12,7 +12,7 @@ Keep domain behavior in `src/schedule_manager/<domain>/`. Follow the existing do
 - `router.py`: HTTP endpoints and transport-level error mapping.
 - `errors.py`: errors specific to the domain.
 
-Services own domain rules, validation, authorization, and orchestration. Repositories perform a single persistence responsibility where practical and report database outcomes; they do not combine separate domain operations or decide whether a caller is authorized. Services compose repository operations when a workflow needs multiple writes, within the request/task transaction. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
+Services own domain rules, validation, authorization, and orchestration, including eligibility checks. Authorization decisions must never be implemented in repositories: a repository must not allow or deny an operation based on who is requesting it or on domain roles and memberships. Repositories may return persisted facts for a service to evaluate, and may use database constraints or row locks to preserve data integrity and concurrency guarantees. Repositories otherwise perform persistence responsibilities and report outcomes; they do not combine separate domain operations. Services compose repository operations when a workflow needs multiple writes, within the request/task transaction. Use atomic SQL operations with returned outcomes for writes that may race or depend on uniqueness.
 
 ### Authentication responsibility
 
@@ -20,7 +20,7 @@ Authentication is exclusively a service responsibility. Authentication repositor
 
 ### Subdomains
 
-Give a subdomain its own package and the layers it needs instead of adding its behavior to a neighboring domain's service or repository. For example, business membership code belongs in `business/memberships/`, with its own model, repository, service, schemas, and router as needed.
+Give a subdomain its own package and the layers it needs instead of placing its behavior in a neighboring domain's service or repository. Concepts with separate lifecycle or rules should remain separate subdomains.
 
 ## Error organization
 
@@ -42,6 +42,14 @@ Give a subdomain its own package and the layers it needs instead of adding its b
 
 - Treat an applied migration as immutable. Add a new incremental migration for schema changes that must reach databases where earlier revisions are already recorded.
 - Editing an old migration is appropriate only when it has not been applied in any environment that must be supported. When a schema change needs both a fresh-install definition and an upgrade path, keep the initial schema accurate and make the later migration safe for already-migrated databases.
+
+## Units and memberships
+
+A unit is a child of a business and stores its own identity and business association. Unit membership and unit ownership are distinct associations with their own persistence and rules; do not fold either into the unit's identity or treat membership as ownership.
+
+Business owners manage unit creation and deletion and are the only users who can grant or revoke unit ownership. A user must already be a unit member to become a unit owner. The creator becomes a unit member, but is not made a unit owner automatically.
+
+Unit owners manage unit memberships but cannot grant or revoke ownership. Members can read unit and membership details; only unit owners can add or remove members. A member who is still a unit owner cannot have their membership removed until a business owner revokes that ownership. Deleting a unit also removes its memberships and ownership records.
 
 ## Dependencies and validation
 
